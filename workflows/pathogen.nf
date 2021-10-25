@@ -43,13 +43,21 @@ include { GET_SOFTWARE_VERSIONS } from '../modules/local/get_software_versions' 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK } from '../subworkflows/local/input_check' addParams( options: [:] )
-
+//include { INPUT_CHECK } from '../subworkflows/local/input_check' addParams( options: [:] )
+include { INPUT_CHECK } from '../subworkflows/local/pathogen_input_check' addParams( options: [:] )
+include {RUN_ILLUMINA_QC} from '../subworkflows/local/qc_illumina'
+include {RUN_NANOPORE_QC} from '../subworkflows/local/qc_nanopore'
+ 
+include {RUN_ASSEMBLE_SHORT} from '../subworkflows/local/assembly_short'
+include {RUN_ASSEMBLE_LONG} from '../subworkflows/local/assembly_long'
+include {RUN_ASSEMBLE_HYBRID} from '../subworkflows/local/assembly_hybrid'
 /*
 ========================================================================================
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
 ========================================================================================
 */
+
+
 
 def multiqc_options   = modules['multiqc']
 multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"$params.multiqc_title\""]) : ''
@@ -57,7 +65,7 @@ multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { FASTQC  } from '../modules/nf-core/modules/fastqc/main'  addParams( options: modules['fastqc'] )
+//include { FASTQC  } from '../modules/nf-core/modules/fastqc/main'  addParams( options: modules['fastqc'] )
 include { MULTIQC } from '../modules/nf-core/modules/multiqc/main' addParams( options: multiqc_options   )
 
 /*
@@ -79,15 +87,58 @@ workflow PATHOGEN {
     INPUT_CHECK (
         ch_input
     )
+    short_reads = INPUT_CHECK.out.shortreads
+    long_reads = INPUT_CHECK.out.longreads
 
+    RUN_ILLUMINA_QC(short_reads)
+    ch_software_versions = ch_software_versions.mix(RUN_ILLUMINA_QC.out.versions.first().ifEmpty(null))
+    short_reads = RUN_ILLUMINA_QC.out.qc_reads
+    
+    
+    RUN_NANOPORE_QC(long_reads)
+    ch_software_versions = ch_software_versions.mix(RUN_NANOPORE_QC.out.versions.first().ifEmpty(null))
+    long_reads = RUN_NANOPORE_QC.out.qc_reads
+
+
+    if(params.assembly_type == 'short'){
+    
+        RUN_ASSEMBLE_SHORT ( short_reads)
+        contigs = RUN_ASSEMBLE_SHORT.out.contigs
+        
+        //RUN_KRAKEN2 (short_reads.combine(kraken) )
+        //RUN_KRAKEN2 (short_reads, kraken2_db )
+  } 
+  else if(params.assembly_type == 'long'){
+   
+    RUN_ASSEMBLE_LONG ( long_reads, short_reads)
+    contigs = RUN_ASSEMBLE_LONG.out.contigs
+    //kraken2 is not working well with long reads because of the high error rate
+    //kmer based approach is error prone
+    
+    // RUN_KRAKEN2 (short_reads, kraken2_db )
+    // RUN_KRAKEN2 (contigs, kraken2_db )
+  }
+  /* 
+  else if(params.assembly_type == 'hybrid'){
+    
+    long_reads.view()
+    short_reads.view()
+    RUN_ASSEMBLE_HYBRID ( long_reads, short_reads)
+    contigs =RUN_ASSEMBLE_HYBRID.out.contigs
+    RRUN_KRAKEN2 (short_reads, kraken2_db )
+    RUN_KRAKEN2 (contigs, kraken2_db )
+  }
+    
+     */
+    
     //
     // MODULE: Run FastQC
     //
-    FASTQC (
+   /*  FASTQC (
         INPUT_CHECK.out.reads
     )
-    ch_software_versions = ch_software_versions.mix(FASTQC.out.version.first().ifEmpty(null))
-
+    ch_software_versions = ch_software_versions.mix(FASTQC.out.versions.first().ifEmpty(null))
+ */
     //
     // MODULE: Pipeline reporting
     //
@@ -103,10 +154,11 @@ workflow PATHOGEN {
         ch_software_versions.map { it }.collect()
     )
 
+    //multiqc is having some problems related to ifEmpty(null)
     //
     // MODULE: MultiQC
     //
-    workflow_summary    = WorkflowPathogen.paramsSummaryMultiqc(workflow, summary_params)
+    /* workflow_summary    = WorkflowPathogen.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
     ch_multiqc_files = Channel.empty()
@@ -120,7 +172,7 @@ workflow PATHOGEN {
         ch_multiqc_files.collect()
     )
     multiqc_report       = MULTIQC.out.report.toList()
-    ch_software_versions = ch_software_versions.mix(MULTIQC.out.version.ifEmpty(null))
+    ch_software_versions = ch_software_versions.mix(MULTIQC.out.version.ifEmpty(null)) */
 }
 
 /*

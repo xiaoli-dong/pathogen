@@ -44,6 +44,78 @@
                 }
             }
         },
+        "assembly_parameters": {
+            "title": "Assembly parameters",
+            "type": "object",
+            "description": "Parameters for the assembly",
+            "default": "",
+            "properties": {
+                "assembly_type": {
+                    "type": "string",
+                    "description": "This adjusts the type of assembly done with the input data and can be any of `long`, `short` or `hybrid`.",
+                    "default": "short",
+                    "enum": [
+                        "short",
+                        "long",
+                        "hybrid"
+                    ]
+                },
+                "short_reads_assembler": {
+                    "type": "string",
+                    "description": "The assembler to use for short reads assembly. Available options are 'skesa', `unicycler', 'spades'.",
+                    "default": "skesa",
+                    "enum": [
+                        "skesa",
+                        "spades",
+                        "unicycler"
+                    ]
+                },
+                "long_reads_assembler": {
+                    "type": "string",
+                    "description": "The assembler to use for long reads assembly. Available options are 'flye', `miniasm', 'unicycler'.",
+                    "default": "flye",
+                    "enum": [
+                        "flye",
+                        "miniasm",
+                        "unicycler"
+                    ]
+                },
+                "hybrid_assembler": {
+                    "type": "string",
+                    "description": "The assembler to use for long reads assembly. Available options are  'unicycler', 'spades'.",
+                    "default": "unicycler",
+                    "enum": [
+                        "unicycler",
+                        "spades"
+                    ]
+                }
+            }
+        },
+        "polishing_parameters": {
+            "title": "Polishing parameters",
+            "type": "object",
+            "description": "Polishing methods for polishing long read assemblies",
+            "default": "",
+            "properties": {
+                "long_reads_polisher": {
+                    "type": "string",
+                    "description": "Which polishing method to use by using long reads.",
+                    "default": "4xracon+1xmedaka",
+                    "enum": [
+                        "4xracon+1xmedaka"
+                    ]
+                },
+                "short_reads_polisher": {
+                    "type": "string",
+                    "description": "Which polishing method to use by using short reads.  Allowed options are '1xpolca+2xnextpolish', 'pilon'",
+                    "default": "1xpolca+2xnextpolish",
+                    "enum": [
+                        "1xpolca+2xnextpolish",
+                        "pilon"
+                    ]
+                }
+            }
+        },
         "reference_genome_options": {
             "title": "Reference genome options",
             "type": "object",
