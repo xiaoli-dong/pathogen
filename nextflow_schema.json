@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "$id": "https://raw.githubusercontent.com/nf-core/pathogen/master/nextflow_schema.json",
     "title": "nf-core/pathogen pipeline parameters",
-    "description": "Pathogen sequence analysis pipeline",
+    "description": "Pathogen genome analysis pipeline",
     "type": "object",
     "definitions": {
         "input_output_options": {
@@ -116,44 +116,81 @@
                 }
             }
         },
-        "reference_genome_options": {
-            "title": "Reference genome options",
+        "annotation_parameters": {
+            "title": "Annotation Parameters",
             "type": "object",
-            "fa_icon": "fas fa-dna",
-            "description": "Reference genome related files and options required for the workflow.",
+            "description": "",
+            "default": "",
             "properties": {
-                "genome": {
+                "annotation_tool": {
                     "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
-                },
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                },
-                "igenomes_base": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory / URL base for iGenomes references.",
-                    "default": "s3://ngi-igenomes/igenomes",
-                    "fa_icon": "fas fa-cloud-download-alt",
-                    "hidden": true
-                },
-                "igenomes_ignore": {
-                    "type": "boolean",
-                    "description": "Do not load the iGenomes reference config.",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
+                    "description": "The annotation method to annotate the final assembly. Default choice is `bakta`. Allowed options are 'prokka', 'bakta'",
+                    "default": "bakta",
+                    "enum": [
+                        "prokka",
+                        "bakta"
+                    ]
                 }
             }
         },
+        "taxonomic_profiling_options": {
+            "title": "Taxonomic profiling options",
+            "type": "object",
+            "description": "Taxonomic classification is disabled by default. You have to specify one of the options below to activate it.",
+            "default": "",
+            "properties": {
+                "kraken2_db": {
+                    "type": "string",
+                    "description": "Database for taxonomic binning with kraken2.",
+                    "help_text": "The database file must be a compressed tar archive that contains at least the three files `hash.k2d`, `opts.k2d` and `taxo.k2d`. E.g. ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/minikraken_8GB_202003.tgz."
+                }
+            }
+        },
+        "skipping_options": {
+            "title": "Skipping Options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "fa_icon": "fas fa-forward",
+            "properties": {
+                "skip_kraken2": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip running Kraken2 classifier on reads."
+                },
+                "skip_annotation": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip annotating the assembly with Prokka /DFAST."
+                },
+                "skip_polish": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip polishing the long-read assembly with fast5 input. Will not affect short/hybrid assemblies."
+                },
+                "skip_long_reads_qc": {
+                    "type": "boolean",
+                    "description": "Skip long reads qc procedure"
+                },
+                "skip_short_reads_qc": {
+                    "type": "boolean",
+                    "description": "Skip short reads qc procedure"
+                },
+                "skip_mlst": {
+                    "type": "boolean",
+                    "description": "skip running mlst on contigs"
+                },
+                "skip_resistome": {
+                    "type": "boolean",
+                    "description": "skip predicting resistome and virulome prediction"
+                },
+                "skip_plasmid": {
+                    "type": "boolean",
+                    "description": "Skip running mobsuite on contigs"
+                }
+            }
+        },
+        
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -254,7 +291,7 @@
                     "type": "boolean",
                     "description": "Display help text.",
                     "fa_icon": "fas fa-question-circle",
-                    "hidden": true
+                    "hidden": false
                 },
                 "publish_dir_mode": {
                     "type": "string",
@@ -348,7 +385,19 @@
             "$ref": "#/definitions/input_output_options"
         },
         {
-            "$ref": "#/definitions/reference_genome_options"
+            "$ref": "#/definitions/assembly_parameters"
+        },
+        {
+            "$ref": "#/definitions/polishing_parameters"
+        },
+        {
+            "$ref": "#/definitions/annotation_parameters"
+        },
+        {
+            "$ref": "#/definitions/taxonomic_profiling_options"
+        },
+        {
+            "$ref": "#/definitions/skipping_options"
         },
         {
             "$ref": "#/definitions/institutional_config_options"

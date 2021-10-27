@@ -20,7 +20,8 @@ process PILON {
     }
 
     input:
-    tuple val(meta), path(reads)
+    tuple val(meta), path(sorted_bam)
+    tuple val(meta), path(sorted_bamb_idex)
     tuple val(meta), path(assembly)
 
     output:
@@ -31,21 +32,14 @@ process PILON {
     def software    = getSoftwareName(task.process)
     def prefix      = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     def maxmem = "-Xmx${task.memory.toGiga()}g"
+    def round = params.pilon_round ? params.pilon_round : ""
 
-    //4x polish
     """
-    source /data/software/miniconda3/etc/profile.d/conda.sh
-    conda activate pilon
-
-    sh $module_dir/pilon.sh ${assembly} ${reads[0]} ${reads[1]} $task.cpus ${maxmem} $options.args
-    
-    reformat.sh in=genome.pilon.fasta out=${prefix}_pilon.fasta $options.args2
+    pilon $options.args --genome ${assembly} --frags ${sorted_bam} --output round${round}_pilon 
 
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:
         ${getSoftwareName(task.process)}: \$(pilon --version 2>&1 | sed 's/^Pilon version //; s/ .*\$//' )
     END_VERSIONS
-
-    conda deactivate
     """
 }

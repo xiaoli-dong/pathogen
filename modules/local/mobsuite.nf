@@ -12,11 +12,11 @@ process MOBSUITE {
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
 
     cache 'lenient'
-    conda (params.enable_conda ? 'bioconda::shovill=1.1.0' : null)
+    conda (params.enable_conda ? 'bioconda::mob_suite=1.4.9' : null)
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container 'https://depot.galaxyproject.org/singularity/fastp:0.20.1--h8b12597_0'
+        container 'https://depot.galaxyproject.org/singularity/mob_suite%3A3.0.3--pyhdfd78af_0'
     } else {
-        container 'quay.io/biocontainers/fastp:0.20.1--h8b12597_0'
+        container 'quay.io/biocontainers/mob_suite%3A3.0.3--pyhdfd78af_0'
     }
 
     input:
@@ -34,8 +34,6 @@ process MOBSUITE {
     maxmem = task.memory.toGiga()
 
     """
-    source /data/software/miniconda3/etc/profile.d/conda.sh
-    conda activate mob_suite
     mob_recon -i $asm -s ${prefix} -n $task.cpus -o mob
 
     if [ ! -f mob/mobtyper_results.txt ];then
@@ -45,14 +43,15 @@ process MOBSUITE {
     mv mob/contig_report.txt ${prefix}_contig_report.txt
     mv mob/mobtyper_results.txt ${prefix}_mobtyper_results.txt
     
+    wrangle_mobsuite.py ${prefix}_mobtyper_results.txt ${prefix}
+    mv plasmid.txt ${prefix}_plasmid.txt
+
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:
         ${getSoftwareName(task.process)}: \$(mob_recon -V | sed 's/^mob_recon //;')
     END_VERSIONS
 
-    conda deactivate
-    $module_dir/wrangle_mobsuite.py ${prefix}_mobtyper_results.txt ${prefix}
-    mv plasmid.txt ${prefix}_plasmid.txt
+    
     """
     
 }

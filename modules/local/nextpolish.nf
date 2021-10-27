@@ -15,24 +15,27 @@ process NEXTPOLISH {
 
     
     input:
-    tuple val(meta), path(reads)
-    tuple val(meta), path(assembly)
+    tuple val(meta), path(sorted_bam)
+    tuple val(meta), path(sorted_bamb_idex)
+    tuple val(meta), path(contigs)
+
 	output:
     tuple val(meta), file("*_nextpolish.fasta"), emit: assembly
     path ("versions.yml"), emit: versions
 
-	when:
-	!params.skip_illumina
+	// when:
+	// !params.skip_illumina
 	script:
 	def software    = getSoftwareName(task.process)
     def prefix      = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
+    def algorithm = params.algorithm ? params.algorithm : "1"
 
 	"""
-	nextpolish_sr.sh ${assembly} ${reads[0]} ${reads[1]} $task.cpus $options.args
-	
+    python ${params.nextpolish_path}/lib/nextpolish1.py $options.args -g ${contigs} -t ${algorithm} -p ${task.cpus} -s ${sorted_bam} >{$prefix}_t${algorithm}_nextpolish.fasta
+       
 	cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:
-    	${getSoftwareName(task.process)}: \$(nextPolish -v 2>&1 | sed -e 's/^nextPolish //;' | sed '/^[[:space:]]*\$/d')
+    	${getSoftwareName(task.process)}: \$(${params.nextpolish_path}/nextPolish -v 2>&1 | sed -e 's/^nextPolish //;' | sed '/^[[:space:]]*\$/d')
     END_VERSIONS
 
 	"""

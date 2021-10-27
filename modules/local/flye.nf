@@ -34,7 +34,7 @@ process FLYE {
     def prefix      = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
 
     """
-    flye $options.args $options.args -t ${task.cpus}  --nano-raw $reads -o assembly &> flye_${prefix}.log
+    flye $options.args -t ${task.cpus}  --nano-raw $reads -o assembly &> flye_${prefix}.log
     mv assembly/assembly.fasta ${prefix}_contigs.fasta
     mv assembly/assembly_info.txt ${prefix}_contig_info.txt
     mv assembly/assembly_graph.gfa ${prefix}_graph.gfa

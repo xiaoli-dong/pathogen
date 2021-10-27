@@ -51,6 +51,27 @@ include {RUN_NANOPORE_QC} from '../subworkflows/local/qc_nanopore'
 include {RUN_ASSEMBLE_SHORT} from '../subworkflows/local/assembly_short'
 include {RUN_ASSEMBLE_LONG} from '../subworkflows/local/assembly_long'
 include {RUN_ASSEMBLE_HYBRID} from '../subworkflows/local/assembly_hybrid'
+include {
+    RUN_RACON_POLISH;
+} from '../subworkflows/local/long_reads_polisher'
+include {
+    RUN_PILON_POLISH;
+    RUN_PILON_POLISH as RUN_PILON_POLISH2;
+    RUN_PILON_POLISH as RUN_PILON_POLISH3;
+    RUN_PILON_POLISH as RUN_PILON_POLISH4;
+    RUN_NEXTPOLISH_POLISH;
+    RUN_NEXTPOLISH_POLISH as RUN_NEXTPOLISH_POLISH2;
+} from '../subworkflows/local/short_reads_polisher'
+
+include {MEDAKA} from '../modules/local/medaka' addParams( options: modules['medaka'])
+include {POLCA} from '../modules/local/polca'                              addParams( options: modules['polca']) 
+include {KRAKEN2_KRAKEN2} from '../modules/nf-core/modules/kraken2/kraken2/main'        addParams( options: modules['kraken2'])   
+
+include { ABRITAMR} from '../modules/local/abritamr'          addParams( options: modules['abritamr'])      
+include { MLST } from '../modules/nf-core/modules/mlst/main'                  addParams( options: modules['mlst'])
+include { PROKKA } from '../modules/nf-core/modules/prokka/main'              addParams( options: modules['prokka'])
+include { BAKTA } from '../modules/local/bakta'                addParams( options: modules['bakta'])
+include { MOBSUITE } from '../modules/local/mobsuite'          addParams( options: modules['mobsuite'])
 /*
 ========================================================================================
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -99,38 +120,82 @@ workflow PATHOGEN {
     ch_software_versions = ch_software_versions.mix(RUN_NANOPORE_QC.out.versions.first().ifEmpty(null))
     long_reads = RUN_NANOPORE_QC.out.qc_reads
 
+    //classify
+    kraken2_db = Channel.fromPath( "${params.kraken2_db}")
+    KRAKEN2_KRAKEN2 (short_reads, kraken2_db)
 
+    // assembly
     if(params.assembly_type == 'short'){
     
         RUN_ASSEMBLE_SHORT ( short_reads)
         contigs = RUN_ASSEMBLE_SHORT.out.contigs
+    } 
+    else if(params.assembly_type == 'long'){
+    
+        RUN_ASSEMBLE_LONG ( long_reads, short_reads)
+        contigs = RUN_ASSEMBLE_LONG.out.contigs
+
+        if(!params.skip_racon){
+            RUN_RACON_POLISH(long_reads, contigs)
+            contigs = RUN_RACON_POLISH.out.assembly
+        }
+        if(!params.skip_medaka){
+            MEDAKA(long_reads,  contigs)
+            contigs = MEDAKA.out.assembly
+        }
+
+        if(!params.skip_short_reads_polish  && params.short_reads_polisher  == "pilon"){
+            // 4x iterations are recommended
+            RUN_PILON_POLISH(short_reads, contigs)
+            contigs = RUN_PILON_POLISH.out.assembly
+
+            RUN_PILON_POLISH2(short_reads, contigs)
+            contigs = RUN_PILON_POLISH2.out.assembly
+
+            RUN_PILON_POLISH3(short_reads, contigs)
+            contigs = RUN_PILON_POLISH3.out.assembly
+
+            RUN_PILON_POLISH4(short_reads, contigs)
+            contigs = RUN_PILON_POLISH4.out.assembly
+
+        }
+        if(!params.skip_short_reads_polish  && params.short_reads_polisher  == "1xpolca+2xnextpolish"){
+            //when run as sigularity, the program is depend on bwa, it is not working 
+            /* if(params.bwa_on_path && !params.skip_polca){
+                POLCA(short_reads, contigs)
+                contigs = POLCA.out.assembly
+            } */
+
+            // 2x iterations are recommended
+            if(!params.skip_nextpolish){
+                RUN_NEXTPOLISH_POLISH(short_reads, contigs )
+                contigs = RUN_NEXTPOLISH_POLISH.out.assembly 
+
+                RUN_NEXTPOLISH_POLISH2(short_reads, contigs )
+                contigs = RUN_NEXTPOLISH_POLISH2.out.assembly 
+
+            }
+        }
+    
+    }
+    else if(params.assembly_type == 'hybrid'){
+        long_reads.view()
+        short_reads.view()
+        RUN_ASSEMBLE_HYBRID ( long_reads, short_reads)
+        contigs =RUN_ASSEMBLE_HYBRID.out.contigs
         
-        //RUN_KRAKEN2 (short_reads.combine(kraken) )
-        //RUN_KRAKEN2 (short_reads, kraken2_db )
-  } 
-  else if(params.assembly_type == 'long'){
-   
-    RUN_ASSEMBLE_LONG ( long_reads, short_reads)
-    contigs = RUN_ASSEMBLE_LONG.out.contigs
-    //kraken2 is not working well with long reads because of the high error rate
-    //kmer based approach is error prone
+    }
     
-    // RUN_KRAKEN2 (short_reads, kraken2_db )
-    // RUN_KRAKEN2 (contigs, kraken2_db )
-  }
-  /* 
-  else if(params.assembly_type == 'hybrid'){
-    
-    long_reads.view()
-    short_reads.view()
-    RUN_ASSEMBLE_HYBRID ( long_reads, short_reads)
-    contigs =RUN_ASSEMBLE_HYBRID.out.contigs
-    RRUN_KRAKEN2 (short_reads, kraken2_db )
-    RUN_KRAKEN2 (contigs, kraken2_db )
-  }
-    
-     */
-    
+     // analysis
+     if(params.annotation_tool== "bakta"){
+          BAKTA(contigs)
+     }
+     else if(params.annotation_tool == "prokka"){
+        PROKKA(contigs)
+    }
+    ABRITAMR (contigs )
+    MLST (contigs)
+    MOBSUITE (contigs )
     //
     // MODULE: Run FastQC
     //
@@ -154,25 +219,6 @@ workflow PATHOGEN {
         ch_software_versions.map { it }.collect()
     )
 
-    //multiqc is having some problems related to ifEmpty(null)
-    //
-    // MODULE: MultiQC
-    //
-    /* workflow_summary    = WorkflowPathogen.paramsSummaryMultiqc(workflow, summary_params)
-    ch_workflow_summary = Channel.value(workflow_summary)
-
-    ch_multiqc_files = Channel.empty()
-    ch_multiqc_files = ch_multiqc_files.mix(Channel.from(ch_multiqc_config))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(GET_SOFTWARE_VERSIONS.out.yaml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
-
-    MULTIQC (
-        ch_multiqc_files.collect()
-    )
-    multiqc_report       = MULTIQC.out.report.toList()
-    ch_software_versions = ch_software_versions.mix(MULTIQC.out.version.ifEmpty(null)) */
 }
 
 /*

@@ -35,7 +35,7 @@ process UNICYCLERHYBRID {
     """
 
     unicycler --threads $task.cpus  $options.args  $input_reads  --out ./
-    reformat.sh in=assembly.fasta out=${prefix}_contigs.fasta $options.args2
+    mv assembly.fasta ${prefix}_contigs.fasta
     mv assembly.gfa ${prefix}_graph.gfa
     mv unicycler.log ${prefix}_unicycler.log
 

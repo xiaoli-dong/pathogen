@@ -15,6 +15,12 @@ process ABRITAMR {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
     
+    conda (params.enable_conda ? 'bioconda::abritamr=1.0.4 bioconda::ncbi-amrfinder' : null)
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container 'https://depot.galaxyproject.org/singularity/abritamr%3A1.0.4--hdfd78af_0'
+    } else {
+        container 'quay.io/biocontainers/abritamr%3A1.0.4--hdfd78af_0'
+    }
     input:
     tuple val(meta), path(contigs)
 
@@ -31,23 +37,23 @@ process ABRITAMR {
 
     //def organism = params.species_options.any { it.contains(params.species) } ? "-sp $params.species": ""
     """
-    source /data/software/miniconda3/etc/profile.d/conda.sh
-    conda activate ncbi-amrfinderplus
+    amrfinder_update -d 
     abritamr run -c $contigs -px ${meta.id} -j $task.cpus $options.args
 
     cp ${meta.id}/summary_virulence.txt ${prefix}_summary_virulence.txt
     cp ${meta.id}/summary_matches.txt ${prefix}_summary_matches.txt
     cp ${meta.id}/summary_partials.txt ${prefix}_summary_partials.txt
 
-    
+    combine.py ${meta.id} ${prefix}_summary_matches.txt ${prefix}_summary_partials.txt
+    mv resistome.txt ${prefix}_resistome.txt
+
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:
         ${getSoftwareName(task.process)}: \$(abritamr -v 2>&1 | sed 's/abritamr //')
     END_VERSIONS
     
-    conda deactivate
-    $module_dir/combine.py ${meta.id} ${prefix}_summary_matches.txt ${prefix}_summary_partials.txt
-    mv resistome.txt ${prefix}_resistome.txt
+   
+
     """
 }
 

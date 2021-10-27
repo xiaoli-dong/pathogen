@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+ #!/bin/env bash
 
 genome=$1
 reads=$2

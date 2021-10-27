@@ -4,7 +4,7 @@ include { initOptions; saveFiles; getSoftwareName; getProcessName } from './func
 params.options = [:]
 options        = initOptions(params.options)
 
-
+//has dependency on bwa
 process POLCA {
 
 	tag "$meta.id"
@@ -18,8 +18,10 @@ process POLCA {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://depot.galaxyproject.org/singularity/masurca%3A3.4.2--pl5262h86ccdc5_1"
         
+        
     } else {
         container "quay.io/biocontainers/masurca%3A3.4.2--pl5262h86ccdc5_1"
+       
     }
 
     input:
@@ -32,7 +34,7 @@ process POLCA {
     path ("versions.yml"), emit: versions
 
 	when:
-	!params.skip_illumina
+	//!params.skip_illumina
 	script:
     def software    = getSoftwareName(task.process)
     def prefix      = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
