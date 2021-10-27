@@ -12,11 +12,11 @@ process BBMAP_BBDUK {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
 
-    conda (params.enable_conda ? "bioconda::bbmap=38.92" : null)
+    conda (params.enable_conda ? "bioconda::bbmap=38.93" : null)
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://depot.galaxyproject.org/singularity/bbmap:38.92--he522d1c_0"
+        container "https://depot.galaxyproject.org/singularity/bbmap%3A38.93--he522d1c_0"
     } else {
-        container "quay.io/biocontainers/bbmap:bbmap:38.92--he522d1c_0"
+        container "quay.io/biocontainers/bbmap:bbmap:38.93--he522d1c_0"
     }
 
     input:

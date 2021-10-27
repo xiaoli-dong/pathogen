@@ -1,8 +1,6 @@
 // Import generic module functions
 include { initOptions; saveFiles; getSoftwareName; getProcessName } from './functions'
 
-module_dir = moduleDir + "/bin"
-
 params.options = [:]
 def options    = initOptions(params.options)
 

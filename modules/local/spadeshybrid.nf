@@ -13,11 +13,11 @@ process SPADESHYBRID {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
 
-    conda (params.enable_conda ? "bioconda::spades=3.13.1" : null)
+    conda (params.enable_conda ? 'bioconda::spades=3.15.3' : null)
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://depot.galaxyproject.org/singularity/spades:3.13.1--h2d02072_2"
+        container "https://depot.galaxyproject.org/singularity/spades:3.15.3--h95f258a_0"
     } else {
-        container "quay.io/biocontainers/spades:3.13.1--h2d02072_2"
+        container "quay.io/biocontainers/spades:3.15.3--h95f258a_0"
     }
 
     input:
@@ -29,8 +29,8 @@ process SPADESHYBRID {
     tuple val(meta), path('*contigs.fasta'), emit: contigs
     tuple val(meta), path('*.gfa'),  emit: gfa
     tuple val(meta), path('*.log'), emit: log
-    path("versions.yml"), emit: versions
-
+    //path("versions.yml"), emit: versions
+    path  "versions.yml"                       , emit: versions
 
     script:
     def software    = getSoftwareName(task.process)

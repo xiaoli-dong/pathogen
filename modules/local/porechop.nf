@@ -13,11 +13,11 @@ process PORECHOP {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
 
-    conda (params.enable_conda ? "bioconda::porechop=0.2.3_seqan2.1.1" : null)
+    conda (params.enable_conda ? "bioconda::porechop=0.2.4" : null)
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://depot.galaxyproject.org/singularity/porechop:0.2.3_seqan2.1.1--py36h2d50403_3"
+        container "https://depot.galaxyproject.org/singularity/porechop%3A0.2.4--py39h7cff6ad_2"
     } else {
-        container "quay.io/biocontainers/porechop:0.2.3_seqan2.1.1--py36h2d50403_3"
+        container "quay.io/biocontainers/porechop:0.2.4--py39h7cff6ad_2"
     }
 
     input:

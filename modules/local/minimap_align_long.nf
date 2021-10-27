@@ -14,7 +14,7 @@ process MINIMAP2_ALIGN_LONG {
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
     
 
-    conda (params.enable_conda ? 'bioconda::minimap2=2.21' : null)
+    conda (params.enable_conda ? 'bioconda::minimap2=2.22' : null)
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://depot.galaxyproject.org/singularity/minimap2:2.21--h5bf99c6_0"
     } else {

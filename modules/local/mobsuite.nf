@@ -12,7 +12,7 @@ process MOBSUITE {
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
 
     cache 'lenient'
-    conda (params.enable_conda ? 'bioconda::mob_suite=1.4.9' : null)
+    conda (params.enable_conda ? 'bioconda::mob_suite=3.0.3' : null)
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container 'https://depot.galaxyproject.org/singularity/mob_suite%3A3.0.3--pyhdfd78af_0'
     } else {
