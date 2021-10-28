@@ -16,17 +16,17 @@ workflow ARG {
         SRAX(fasta.collect { it[1] })
 
         RGI(fasta, card_db)
-        //RGI.out.json.collect{ it[1] } | RGI_HEATMAP
+        RGI.out.json.collect{ it[1] } | RGI_HEATMAP
 
         ABRICATE.out.report | HAMRONIZE_ABRICATE
         RGI.out.txt | HAMRONIZE_RGI
 
-        //HAMRONIZE_ABRICATE.out.hamronized.mix(HAMRONIZE_RGI.out.hamronized).collect{ it[1] } | HAMRONIZE_SUMMARIZE
+        HAMRONIZE_ABRICATE.out.hamronized.mix(HAMRONIZE_RGI.out.hamronized).collect{ it[1] } | HAMRONIZE_SUMMARIZE
         
     emit:
         summary  = ABRICATE_SUMMARIZE.out.summary  // channel: [ summary ]
         out_srax = SRAX.out.result
-        //heatmap = RGI_HEATMAP.out.heatmap
-        //hamronize_summary_tsv =  HAMRONIZE_SUMMARIZE.out.summary_tsv
-        //hamronize_summary_html =  HAMRONIZE_SUMMARIZE.out.summary_html
+        heatmap = RGI_HEATMAP.out.heatmap
+        hamronize_summary_tsv =  HAMRONIZE_SUMMARIZE.out.summary_tsv
+        hamronize_summary_html =  HAMRONIZE_SUMMARIZE.out.summary_html
 }    
