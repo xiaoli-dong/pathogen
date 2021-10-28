@@ -198,7 +198,7 @@ workflow PATHOGEN {
           BAKTA(contigs)
      }
      else if(params.annotation_tool == "prokka"){
-        PROKKA(contigs)
+        PROKKA(contigs, [], [])
     }
     card_db = Channel.fromPath( "${params.card_db}")
     ARG(contigs, card_db)
