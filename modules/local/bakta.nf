@@ -12,12 +12,12 @@ process BAKTA {
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
 
     cache 'lenient'
-    // conda (params.enable_conda ? 'bioconda::shovill=1.1.0' : null)
-    // if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    //     container 'https://depot.galaxyproject.org/singularity/fastp:0.20.1--h8b12597_0'
-    // } else {
-    //     container 'quay.io/biocontainers/fastp:0.20.1--h8b12597_0'
-    // }
+    conda (params.enable_conda ? 'bioconda::bakta=1.2.2' : null)
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container 'https://depot.galaxyproject.org/singularity/bakta%3A1.2.2--pyhdfd78af_0'
+    } else {
+        container 'quay.io/biocontainers/bakta:1.2.2--pyhdfd78af_0'
+    }
 
     scratch true
     
@@ -39,7 +39,7 @@ process BAKTA {
     def prefix      = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
     
-    bakta --output ./ --prefix ${prefix} --locus-tag bakta --threads $task.cpus $options.args $contigs
+    bakta --db ${params.bakta_db} --output ./ --prefix ${prefix} --locus-tag bakta --threads $task.cpus $options.args $contigs
     
 
     cat <<-END_VERSIONS > versions.yml
