@@ -94,3 +94,6 @@ You can cite the `nf-core` publication as follows:
 
 > POLCA is not working with sigularity, bwa is not the path
 > nextpolish has no singularity image, need local installation
+
+## reference
+>https://github.com/ablab/graphamr

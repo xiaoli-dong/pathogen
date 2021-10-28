@@ -38,8 +38,7 @@ process BAKTA {
     def software    = getSoftwareName(task.process)
     def prefix      = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    source /data/software/miniconda3/etc/profile.d/conda.sh
-    conda activate bakta
+    
     bakta --output ./ --prefix ${prefix} --locus-tag bakta --threads $task.cpus $options.args $contigs
     
 
@@ -48,7 +47,7 @@ process BAKTA {
         ${getSoftwareName(task.process)}: \$(bakta --version 2>& 1 | sed 's/^bakta //;')
     END_VERSIONS
     
-    conda deactivate
+    
     """
     
 }
