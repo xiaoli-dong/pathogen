@@ -11,7 +11,8 @@ WorkflowPathogen.initialise(params, log)
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config, params.fasta ]
+//def checkPathParamList = [ params.input, params.multiqc_config, params.fasta ]
+def checkPathParamList = [ params.input, params.multiqc_config]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
@@ -72,6 +73,12 @@ include { MLST } from '../modules/nf-core/modules/mlst/main'                  ad
 include { PROKKA } from '../modules/nf-core/modules/prokka/main'              addParams( options: modules['prokka'])
 include { BAKTA } from '../modules/local/bakta'                addParams( options: modules['bakta'])
 include { MOBSUITE } from '../modules/local/mobsuite'          addParams( options: modules['mobsuite'])
+include {
+    ARG
+} from '../subworkflows/local/arg'
+
+include { ABRICATE} from '../modules/local/abricate' addParams( options: modules['abricate_vf'])
+include { ABRICATE_SUMMARIZE } from '../modules/local/abricate' 
 /*
 ========================================================================================
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -193,9 +200,14 @@ workflow PATHOGEN {
      else if(params.annotation_tool == "prokka"){
         PROKKA(contigs)
     }
-    ABRITAMR (contigs )
+    card_db = Channel.fromPath( "${params.card_db}")
+    ARG(contigs, card_db)
     MLST (contigs)
     MOBSUITE (contigs )
+
+    //virulome
+    ABRICATE(contigs)
+    ABRICATE.out.report.collect{ it[1] } | ABRICATE_SUMMARIZE
     //
     // MODULE: Run FastQC
     //

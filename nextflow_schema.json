@@ -146,6 +146,7 @@
                 }
             }
         },
+        
         "skipping_options": {
             "title": "Skipping Options",
             "type": "object",
