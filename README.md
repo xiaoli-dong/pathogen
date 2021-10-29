@@ -45,7 +45,8 @@ On release, automated continuous integration tests run the pipeline on a full-si
 * Long reads assembly polishing using long reads with user choice of the polishing programs:
     * [`Racon`](https://github.com/isovic/racon)
     * [`Medaka`](https://github.com/nanoporetech/medaka)
-* Long reads assembly polishing using short reads with user choice of the polishing programs: 
+* Short reads assembly polishing using short reads with user choice of the polishing programs: 
+    * [`Pilon`](https://github.com/broadinstitute/pilon)
     * [`POLCA`](https://github.com/alekseyzimin/masurca)
     * [`NextPolish`](https://github.com/Nextomics/NextPolish)
 * Assembled contig annotation with user choice of the annotation tools:
