@@ -36,7 +36,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
     * [`Spades`](https://github.com/ablab/spades)
     * [`Unicycler`](https://github.com/rrwick/Unicycler)
 * Long read assembly with user choice of the assemblers:
-    * [`Llye`](https://github.com/fenderglass/Flye)
+    * [`Flye`](https://github.com/fenderglass/Flye)
     * [`Miniasm`](https://github.com/lh3/miniasm)
     * [`Unicycler`](https://github.com/rrwick/Unicycler)
 * Long and short read hybrid assembly with user choilce of assemblers:
