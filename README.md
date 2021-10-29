@@ -36,8 +36,8 @@ On release, automated continuous integration tests run the pipeline on a full-si
     * [`Spades`](https://github.com/ablab/spades)
     * [`Unicycler`](https://github.com/rrwick/Unicycler)
 * Long read assembly with user choice of the assemblers:
-    * [`flye`](https://github.com/fenderglass/Flye)
-    * [`miniasm`](https://github.com/lh3/miniasm)
+    * [`Llye`](https://github.com/fenderglass/Flye)
+    * [`Miniasm`](https://github.com/lh3/miniasm)
     * [`Unicycler`](https://github.com/rrwick/Unicycler)
 * Long and short read hybrid assembly with user choilce of assemblers:
     * [`Spades`](https://github.com/ablab/spades)
@@ -49,14 +49,14 @@ On release, automated continuous integration tests run the pipeline on a full-si
     * [`POLCA`](https://github.com/alekseyzimin/masurca)
     * [`NextPolish`](https://github.com/Nextomics/NextPolish)
 * Assembled contig annotation with user choice of the annotation tools:
-    * [`bakta`](https://github.com/oschwengers/bakta)
+    * [`Bakta`](https://github.com/oschwengers/bakta)
     * [`Prokka`](https://github.com/tseemann/prokka)
 * Multilocus sequence typing using [`mlst`](https://github.com/tseemann/mlst)
 * Virulome detection using [`abricate`](https://github.com/tseemann/abricate) with [`VFDB`](http://www.mgc.ac.cn/VFs/main.htm)
 * AMR gene prediction with multiple tools: 
-    * [`abricate`](https://github.com/tseemann/abricate)
+    * [`Abricate`](https://github.com/tseemann/abricate)
     * [`Resistance Gene Identifier (RGI)`](https://github.com/arpcard/rgi)
-    * [`srax`](https://github.com/lgpdevtools/sraX)
+    * [`sraX`](https://github.com/lgpdevtools/sraX)
     * the AMR gene detection results are standardized with  [`hAMRonization`](https://github.com/pha4ge/hAMRonization)
 * Typing and reconstruction of plasmid sequences from assembled contigs using [`MOB-suite`](https://github.com/phac-nml/mob-suite)
 
@@ -81,7 +81,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
     <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
 
     ```console
-    nextflow run nf-core/pathogen -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> --input samplesheet.csv --genome GRCh37
+    nextflow run nf-core/pathogen -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> -c conf/example.config -profile singularity
     ```
 
 ## Documentation
