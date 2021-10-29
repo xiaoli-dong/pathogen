@@ -57,7 +57,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
     * [`Abricate`](https://github.com/tseemann/abricate)
     * [`Resistance Gene Identifier (RGI)`](https://github.com/arpcard/rgi)
     * [`sraX`](https://github.com/lgpdevtools/sraX)
-    * the AMR gene detection results are standardized with  [`hAMRonization`](https://github.com/pha4ge/hAMRonization)
+    * The AMR gene detection results are standardized with  [`hAMRonization`](https://github.com/pha4ge/hAMRonization)
 * Typing and reconstruction of plasmid sequences from assembled contigs using [`MOB-suite`](https://github.com/phac-nml/mob-suite)
 
 ## Quick Start
