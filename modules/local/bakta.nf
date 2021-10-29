@@ -40,7 +40,7 @@ process BAKTA {
     def prefix      = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
     
-    bakta --db ${db} --output ./ --prefix ${prefix} --locus-tag bakta --threads $task.cpus $options.args $contigs
+    bakta $options.args --db ${db} --output ./ --prefix ${prefix} --locus-tag bakta --threads $task.cpus $contigs
     
     
 

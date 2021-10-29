@@ -7,3 +7,4 @@ testing/
 testing*
 *.pyc
 example_output/*
+test_output/*
