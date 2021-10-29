@@ -69,7 +69,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 3. Download the pipeline and test it on a minimal dataset with a single command:
 
     ```console
-    nextflow run nf-core/pathogen -profile test,<docker/singularity/podman/shifter/charliecloud/conda/institute>
+    nextflow run xiaoli-dong/pathogen -profile test,<docker/singularity/podman/shifter/charliecloud/conda/institute>
     ```
 
     > * Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
@@ -81,7 +81,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
     <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
 
     ```console
-    nextflow run nf-core/pathogen -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> -c conf/example.config -profile singularity
+    nextflow run xiaoli-dong/pathogen -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> -c conf/example.config -profile singularity
     ```
 
 ## Documentation
