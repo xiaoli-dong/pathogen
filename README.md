@@ -125,4 +125,4 @@ You can cite the `nf-core` publication as follows:
 > nextpolish has no singularity image, need local installation
 
 ## reference
->https://github.com/ablab/graphamr
+<!-- >>https://github.com/ablab/graphamr -->
