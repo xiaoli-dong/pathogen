@@ -172,9 +172,9 @@ workflow PATHOGEN {
                 POLCA(short_reads, contigs)
                 contigs = POLCA.out.assembly
             } */
-
+run
             // 2x iterations are recommended
-            if(!params.skip_nextpolish){
+            if(!params.skip_nextpolish || params.nextpolish_path != null ){
                 RUN_NEXTPOLISH_POLISH(short_reads, contigs )
                 contigs = RUN_NEXTPOLISH_POLISH.out.assembly 
 
