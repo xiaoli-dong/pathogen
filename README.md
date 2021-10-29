@@ -32,7 +32,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 * Long Nanopore reads quality checks ([`NanoPlot`](https://github.com/wdecoster/NanoPlot))
 * Taxonomic assignment and contamination check ([`Kraken2`](https://ccb.jhu.edu/software/kraken2/))
 * Short read assembly with user choice of the assemblers:
-    * [`Skesa`](hhttps://github.com/ncbi/SKESA)
+    * [`Skesa`](https://github.com/ncbi/SKESA)
     * [`Spades`](https://github.com/ablab/spades)
     * [`Unicycler`](https://github.com/rrwick/Unicycler)
 * Long read assembly with user choice of the assemblers:
