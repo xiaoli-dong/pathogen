@@ -32,33 +32,33 @@ On release, automated continuous integration tests run the pipeline on a full-si
 * Long Nanopore reads quality checks ([`NanoPlot`](https://github.com/wdecoster/NanoPlot))
 * Taxonomic assignment and contamination check ([`Kraken2`](https://ccb.jhu.edu/software/kraken2/))
 * Short read assembly with user choice of the assemblers:
-    * [`Skesa`] (hhttps://github.com/ncbi/SKESA))
-    * [`Spades`] (https://github.com/ablab/spades))
-    * [`Unicycler`] (https://github.com/rrwick/Unicycler))
+    * [`Skesa`](hhttps://github.com/ncbi/SKESA))
+    * [`Spades`](https://github.com/ablab/spades))
+    * [`Unicycler`](https://github.com/rrwick/Unicycler))
 * Long read assembly with user choice of the assemblers:
-    * [`flye`] (https://github.com/fenderglass/Flye))
-    * [`miniasm`] (https://github.com/lh3/miniasm))
-    * [`Unicycler`] (https://github.com/rrwick/Unicycler))
+    * [`flye`](https://github.com/fenderglass/Flye))
+    * [`miniasm`](https://github.com/lh3/miniasm))
+    * [`Unicycler`](https://github.com/rrwick/Unicycler))
 * Long and short read hybrid assembly with user choilce of assemblers:
-    * [`Spades`] (https://github.com/ablab/spades))
-    * [`Unicycler`] (https://github.com/rrwick/Unicycler))
+    * [`Spades`](https://github.com/ablab/spades))
+    * [`Unicycler`](https://github.com/rrwick/Unicycler))
 * Long reads assembly polishing using long reads with user choice of the polishing programs:
-    * [`Racon`] (https://github.com/isovic/racon))
-    * [`Medaka`] (https://github.com/nanoporetech/medaka))
+    * [`Racon`](https://github.com/isovic/racon))
+    * [`Medaka`](https://github.com/nanoporetech/medaka))
 * Long reads assembly polishing using short reads with user choice of the polishing programs: 
-    * [`POLCA`] (https://github.com/alekseyzimin/masurca))
-    * [`NextPolish`] (https://github.com/Nextomics/NextPolish))
+    * [`POLCA`](https://github.com/alekseyzimin/masurca))
+    * [`NextPolish`](https://github.com/Nextomics/NextPolish))
 * Assembled contig annotation with user choice of the annotation tools:
-    * [`bakta`] (https://github.com/oschwengers/bakta))
-    * [`Prokka`] (https://github.com/tseemann/prokka))
-* Multilocus sequence typing using [`mlst`] (https://github.com/tseemann/mlst))
-* Virulome detection using [`abricate`] (https://github.com/tseemann/abricate)) with [`VFDB`] (http://www.mgc.ac.cn/VFs/main.htm))
+    * [`bakta`](https://github.com/oschwengers/bakta))
+    * [`Prokka`](https://github.com/tseemann/prokka))
+* Multilocus sequence typing using [`mlst`](https://github.com/tseemann/mlst))
+* Virulome detection using [`abricate`](https://github.com/tseemann/abricate)) with [`VFDB`](http://www.mgc.ac.cn/VFs/main.htm))
 * AMR gene prediction with multiple tools: 
-    * [`abricate`] (https://github.com/tseemann/abricate))
-    * [`Resistance Gene Identifier (RGI)`] (https://github.com/arpcard/rgi))
-    * [`srax`] (https://github.com/lgpdevtools/sraX))
-    * the AMR gene detection results are standardized with  [`hAMRonization`] (https://github.com/pha4ge/hAMRonization))
-* Typing and reconstruction of plasmid sequences from assembled contigs using [`MOB-suite`] (https://github.com/phac-nml/mob-suite))
+    * [`abricate`](https://github.com/tseemann/abricate))
+    * [`Resistance Gene Identifier (RGI)`](https://github.com/arpcard/rgi))
+    * [`srax`](https://github.com/lgpdevtools/sraX))
+    * the AMR gene detection results are standardized with  [`hAMRonization`](https://github.com/pha4ge/hAMRonization))
+* Typing and reconstruction of plasmid sequences from assembled contigs using [`MOB-suite`](https://github.com/phac-nml/mob-suite))
 
 ## Quick Start
 
