@@ -23,6 +23,7 @@ process BAKTA {
     
     input:
     tuple val(meta), path(contigs)
+    path  db
 
     output:
     tuple val(meta), path('*.gff3'), emit: bakta_gff
@@ -39,7 +40,8 @@ process BAKTA {
     def prefix      = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
     
-    bakta --db ${params.bakta_db} --output ./ --prefix ${prefix} --locus-tag bakta --threads $task.cpus $options.args $contigs
+    bakta --db ${db} --output ./ --prefix ${prefix} --locus-tag bakta --threads $task.cpus $options.args $contigs
+    
     
 
     cat <<-END_VERSIONS > versions.yml

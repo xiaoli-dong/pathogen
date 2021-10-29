@@ -38,7 +38,7 @@ process RGI {
     export PYTHONPATH="\$(pwd)/card_temp/:\$PATH"
 
     rgi load --card_json ${card_db} --local
-    rgi main -i $fasta -o ${prefix} -n $task.cpus 
+    rgi main -i $fasta -o ${prefix} -n $task.cpus $options.args
     #clean up work dir, if it exists
     [[ -d card_temp ]] && rm -r card_temp
 

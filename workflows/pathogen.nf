@@ -68,7 +68,7 @@ include {MEDAKA} from '../modules/local/medaka' addParams( options: modules['med
 include {POLCA} from '../modules/local/polca'                              addParams( options: modules['polca']) 
 include {KRAKEN2_KRAKEN2} from '../modules/nf-core/modules/kraken2/kraken2/main'        addParams( options: modules['kraken2'])   
 
-include { ABRITAMR} from '../modules/local/abritamr'          addParams( options: modules['abritamr'])      
+//include { ABRITAMR} from '../modules/local/abritamr'          addParams( options: modules['abritamr'])      
 include { MLST } from '../modules/nf-core/modules/mlst/main'                  addParams( options: modules['mlst'])
 include { PROKKA } from '../modules/nf-core/modules/prokka/main'              addParams( options: modules['prokka'])
 include { BAKTA } from '../modules/local/bakta'                addParams( options: modules['bakta'])
@@ -195,7 +195,8 @@ workflow PATHOGEN {
     
      // analysis
      if(params.annotation_tool== "bakta"){
-          BAKTA(contigs)
+        bakta_db = Channel.fromPath( "${params.bakta_db}")
+        BAKTA(contigs, bakta_db)
      }
      else if(params.annotation_tool == "prokka"){
         PROKKA(contigs, [], [])

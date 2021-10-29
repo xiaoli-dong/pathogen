@@ -19,7 +19,7 @@ process SRAX {
     input:
         path fasta
     output:
-        path('srax_results'), emit: result
+        path('Results'), emit: result
         path ("versions.yml"), emit: version
 
     script:
@@ -28,7 +28,7 @@ process SRAX {
     mkdir srax_in
     cp ${fasta.join(' ')} srax_in
     sraX $options.args -i srax_in -o srax_out
-    mv srax_out srax_results
+    mv srax_out/Results .
 
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:

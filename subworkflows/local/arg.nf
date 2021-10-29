@@ -1,7 +1,16 @@
-include { ABRICATE; ABRICATE_SUMMARIZE } from '../../modules/local/abricate'
-include { SRAX } from '../../modules/local/srax'
-include { RGI; RGI_HEATMAP } from '../../modules/local/rgi'
-include { HAMRONIZE_RGI; HAMRONIZE_ABRICATE; HAMRONIZE_SUMMARIZE } from '../../modules/local/hamronization'
+#!/usr/bin/env nextflow
+
+// Don't overwrite global params.modules, create a copy instead and use that within the main script.
+def modules = params.modules.clone()
+    
+include { ABRICATE} from '../../modules/local/abricate' addParams( options: modules['abricate_resistome'])
+include {ABRICATE_SUMMARIZE } from '../../modules/local/abricate' addParams( options: modules['abricate_summarize'])
+
+
+include { SRAX } from '../../modules/local/srax' addParams( options: modules['srax'])
+include { RGI} from '../../modules/local/rgi' addParams( options: modules['rgi'])
+include { RGI_HEATMAP } from '../../modules/local/rgi' addParams( options: modules['rgi_heatmap'])
+include { HAMRONIZE_RGI; HAMRONIZE_ABRICATE; HAMRONIZE_SUMMARIZE } from '../../modules/local/hamronization' addParams( options: modules['hamronize'])
 
 //TODO: RGI_HEATMAP is not working, 
 workflow ARG {
