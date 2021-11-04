@@ -34,9 +34,9 @@ process PORECHOP {
     porechop $options.args -i ${reads} -t ${task.cpus} -o ${prefix}_porechop.fastq
 
     cat <<-END_VERSIONS > versions.yml
-        ${getProcessName(task.process)}:
-            ${getSoftwareName(task.process)}: \$(porechop --version 2>&1 | sed -e "s/.*/porechop &/" )
-        END_VERSIONS
+    ${getProcessName(task.process)}:
+        ${getSoftwareName(task.process)}: \$(porechop --version 2>&1)
+    END_VERSIONS
 
 
     """

@@ -12,19 +12,22 @@ include {RACON as RACON1} from '../../modules/local/racon'                      
 include {RACON as RACON2} from '../../modules/local/racon'                              addParams(racon_round: 2,  options: modules['racon']) 
 include {RACON as RACON3} from '../../modules/local/racon'                              addParams(racon_round: 3,  options: modules['racon']) 
 include {RACON as RACON4} from '../../modules/local/racon'                              addParams(racon_round: 4,  options: modules['racon']) 
-
+include {SEQSTATS} from '../../modules/local/seqstats' addParams( tool: '_racon', options: modules['seqstats_assembly'])   
 workflow RUN_RACON_POLISH {   
 
     take:
         long_reads
         contigs
     main:
-        println "before view"
-        long_reads.view()
+        ch_versions = Channel.empty()
+        
         //1x
         MAP1(long_reads, contigs)
+        ch_versions = ch_versions.mix(MAP1.out.versions.first())
+
         round1_paf = MAP1.out.paf
         RACON1(long_reads, round1_paf, contigs)
+        ch_versions = ch_versions.mix(RACON1.out.versions.first())
         round1_asm = RACON1.out.assembly
         
 
@@ -44,9 +47,12 @@ workflow RUN_RACON_POLISH {
         round4_paf = MAP4.out.paf
         RACON4(long_reads, round4_paf, round3_asm)
         assembly = RACON4.out.assembly
+        SEQSTATS(assembly)
 
     emit:
         assembly
+        versions = ch_versions
+        stats = SEQSTATS.out.stats
         
 }
 

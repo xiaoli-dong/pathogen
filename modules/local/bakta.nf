@@ -23,7 +23,7 @@ process BAKTA {
     
     input:
     tuple val(meta), path(contigs)
-    path  db
+    path db
 
     output:
     tuple val(meta), path('*.gff3'), emit: bakta_gff
@@ -33,17 +33,18 @@ process BAKTA {
     tuple val(meta), path('*.embl'), emit: bakta_embl
     tuple val(meta), path('*.ffn'), emit: bakta_ffn
     tuple val(meta), path('*.faa'), emit: bakta_faa
-    path ("versions.yml"), emit: version
+    path ("versions.yml"), emit: versions
+    
     
     script:
     def software    = getSoftwareName(task.process)
     def prefix      = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
+    
+    
     """
     
-    bakta $options.args --db ${db} --output ./ --prefix ${prefix} --locus-tag bakta --threads $task.cpus $contigs
+    bakta $options.args --db ${db} --output ./ --prefix ${prefix} --locus-tag ${prefix} --threads $task.cpus $contigs
     
-    
-
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:
         ${getSoftwareName(task.process)}: \$(bakta --version 2>& 1 | sed 's/^bakta //;')

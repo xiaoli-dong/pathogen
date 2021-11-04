@@ -69,7 +69,7 @@ process BBMAP_BBDUK {
     
      cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:
-        ${getSoftwareName(task.process)}: \$(bbversion.sh) | sed -e "s/.*/bbmap &/")
+        ${getSoftwareName(task.process)}: \$(bbversion.sh)
     END_VERSIONS
 
     """

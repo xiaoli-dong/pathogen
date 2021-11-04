@@ -25,7 +25,7 @@ process MEDAKA {
 
     output:
     tuple val(meta), file("*_medaka.fasta"), emit: assembly
-    path ("versions.yml"), emit: version
+    path ("versions.yml"), emit: versions
 
     script:
     def software    = getSoftwareName(task.process)

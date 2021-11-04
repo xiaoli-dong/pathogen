@@ -78,7 +78,9 @@ include {
 } from '../subworkflows/local/arg'
 
 include { ABRICATE} from '../modules/local/abricate' addParams( options: modules['abricate_vf'])
-include { ABRICATE_SUMMARIZE } from '../modules/local/abricate' 
+include { ABRICATE_SUMMARIZE } from '../modules/local/abricate' addParams( options: modules['abricate_summarize_vf'])
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main' addParams( options: [publish_files : ['_versions.yml':'']] )
+
 /*
 ========================================================================================
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -119,42 +121,51 @@ workflow PATHOGEN {
     long_reads = INPUT_CHECK.out.longreads
 
     RUN_ILLUMINA_QC(short_reads)
-    ch_software_versions = ch_software_versions.mix(RUN_ILLUMINA_QC.out.versions.first().ifEmpty(null))
-    short_reads = RUN_ILLUMINA_QC.out.qc_reads
     
+    ch_software_versions = ch_software_versions.mix(RUN_ILLUMINA_QC.out.versions)
     
     RUN_NANOPORE_QC(long_reads)
-    ch_software_versions = ch_software_versions.mix(RUN_NANOPORE_QC.out.versions.first().ifEmpty(null))
+    
     long_reads = RUN_NANOPORE_QC.out.qc_reads
+    ch_software_versions = ch_software_versions.mix(RUN_NANOPORE_QC.out.versions)
 
     //classify
-    kraken2_db = Channel.fromPath( "${params.kraken2_db}")
-    KRAKEN2_KRAKEN2 (short_reads, kraken2_db)
+     Channel
+        .value(file( "${params.kraken2_db}" ))
+        .set { ch_kraken2_db_file }
+
+    KRAKEN2_KRAKEN2 (short_reads, ch_kraken2_db_file)
+    ch_software_versions = ch_software_versions.mix(KRAKEN2_KRAKEN2.out.versions)
 
     // assembly
     if(params.assembly_type == 'short'){
     
         RUN_ASSEMBLE_SHORT ( short_reads)
         contigs = RUN_ASSEMBLE_SHORT.out.contigs
+        ch_software_versions = ch_software_versions.mix(RUN_ASSEMBLE_SHORT.out.versions)
     } 
     else if(params.assembly_type == 'long'){
     
         RUN_ASSEMBLE_LONG ( long_reads, short_reads)
         contigs = RUN_ASSEMBLE_LONG.out.contigs
+        ch_software_versions = ch_software_versions.mix(RUN_ASSEMBLE_LONG.out.versions)
 
         if(!params.skip_racon){
             RUN_RACON_POLISH(long_reads, contigs)
             contigs = RUN_RACON_POLISH.out.assembly
+            ch_software_versions = ch_software_versions.mix(RUN_RACON_POLISH.out.versions)
         }
         if(!params.skip_medaka){
             MEDAKA(long_reads,  contigs)
             contigs = MEDAKA.out.assembly
+            ch_software_versions = ch_software_versions.mix(MEDAKA.out.versions)
         }
 
         if(!params.skip_short_reads_polish  && params.short_reads_polisher  == "pilon"){
             // 4x iterations are recommended
             RUN_PILON_POLISH(short_reads, contigs)
             contigs = RUN_PILON_POLISH.out.assembly
+            ch_software_versions = ch_software_versions.mix(RUN_PILON_POLISH.out.versions)
 
             RUN_PILON_POLISH2(short_reads, contigs)
             contigs = RUN_PILON_POLISH2.out.assembly
@@ -177,6 +188,7 @@ workflow PATHOGEN {
             if(!params.skip_nextpolish && params.nextpolish_path != null ){
                 RUN_NEXTPOLISH_POLISH(short_reads, contigs )
                 contigs = RUN_NEXTPOLISH_POLISH.out.assembly 
+                ch_software_versions = ch_software_versions.mix(RUN_NEXTPOLISH_POLISH.out.versions)
 
                 RUN_NEXTPOLISH_POLISH2(short_reads, contigs )
                 contigs = RUN_NEXTPOLISH_POLISH2.out.assembly 
@@ -190,48 +202,52 @@ workflow PATHOGEN {
         short_reads.view()
         RUN_ASSEMBLE_HYBRID ( long_reads, short_reads)
         contigs =RUN_ASSEMBLE_HYBRID.out.contigs
+        ch_software_versions = ch_software_versions.mix(RUN_ASSEMBLE_HYBRID.out.versions)
         
     }
     
      // analysis
      if(params.annotation_tool== "bakta"){
-        bakta_db = Channel.fromPath( "${params.bakta_db}")
-        BAKTA(contigs, bakta_db)
+        Channel
+        .value(file( "${params.bakta_db}" ))
+        .set { ch_bakta_db_file }
+
+        BAKTA(contigs, ch_bakta_db_file)
+        
+        ch_software_versions = ch_software_versions.mix(BAKTA.out.versions)
      }
      else if(params.annotation_tool == "prokka"){
         PROKKA(contigs, [], [])
+        ch_software_versions = ch_software_versions.mix(PROKKA.out.versions)
     }
-    card_db = Channel.fromPath( "${params.card_db}")
-    ARG(contigs, card_db)
+    //card_db = Channel.fromPath( "${params.card_db}")
+    //ARG(contigs, card_db)
     MLST (contigs)
+    ch_software_versions = ch_software_versions.mix(MLST.out.versions)
     MOBSUITE (contigs )
+    ch_software_versions = ch_software_versions.mix(MOBSUITE.out.versions)
 
     //virulome
     ABRICATE(contigs)
+    ch_software_versions = ch_software_versions.mix(ABRICATE.out.versions)
     ABRICATE.out.report.collect{ it[1] } | ABRICATE_SUMMARIZE
-    //
-    // MODULE: Run FastQC
-    //
-   /*  FASTQC (
-        INPUT_CHECK.out.reads
-    )
-    ch_software_versions = ch_software_versions.mix(FASTQC.out.versions.first().ifEmpty(null))
- */
-    //
+    
+    
     // MODULE: Pipeline reporting
-    //
-    ch_software_versions
-        .map { it -> if (it) [ it.baseName, it ] }
-        .groupTuple()
-        .map { it[1][0] }
-        .flatten()
-        .collect()
-        .set { ch_software_versions }
-
-    GET_SOFTWARE_VERSIONS (
-        ch_software_versions.map { it }.collect()
+    
+    
+    CUSTOM_DUMPSOFTWAREVERSIONS (
+        ch_software_versions.unique().collectFile()
+        //ch_software_versions.collectFile()
     )
+    
+    //
+    // MODULE: MultiQC
+    //
+    workflow_summary    = WorkflowPathogen.paramsSummaryMultiqc(workflow, summary_params)
+    ch_workflow_summary = Channel.value(workflow_summary)
 
+    
 }
 
 /*

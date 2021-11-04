@@ -23,15 +23,16 @@ process ABRICATE {
     tuple val(meta), path(fasta)
 
     output:
-    tuple val(meta), path('*.tsv'), emit: report
-    path ("versions.yml"), emit: version
+    tuple val(meta), path('*_abricate.tsv'), emit: report
+    path ("versions.yml"), emit: versions
 
     script:
     def prefix  = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     //def datadir = params.abricate_datadir ? "--datadir ${params.abricate_datadir}" : ""
     """
-    [ ! -f  ${prefix}.fasta ] && ln -s $fasta ${prefix}.fasta
-    abricate $options.args ${prefix}.fasta --threads $task.cpus  > ${prefix}.tsv
+    #[ ! -f  ${prefix}.fasta ] && ln -s $fasta ${prefix}.fasta
+    #abricate $options.args ${prefix}.fasta --threads $task.cpus  > ${prefix}_abricate.tsv
+    abricate $options.args ${fasta} --threads $task.cpus  > ${prefix}_abricate.tsv
     #extract_gene_fasta.py ${prefix}.tsv $fasta
 
     cat <<-END_VERSIONS > versions.yml
@@ -59,11 +60,12 @@ process ABRICATE_SUMMARIZE {
     path('?.tsv')
 
     output:
-    path('all.summary.tsv'), emit: summary
-    path ("versions.yml"), emit: version
+    path('all_abricate_summary.tsv'), emit: summary
+    path ("versions.yml"), emit: versions
+    
     script:
     """
-    abricate --summary *.tsv > all.summary.tsv
+    abricate --summary *.tsv > all_abricate_summary.tsv
 
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:

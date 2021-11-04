@@ -24,8 +24,8 @@ process RGI {
     path card_db
 
     output:
-    tuple val(meta), path('*.json'), emit: json
-    tuple val(meta), path('*.txt'), emit: txt
+    tuple val(meta), path('*_rgi.json'), emit: json
+    tuple val(meta), path('*_rgi.txt'), emit: txt
     path "versions.yml"                    , emit: versions
 
     script:
@@ -38,7 +38,8 @@ process RGI {
     export PYTHONPATH="\$(pwd)/card_temp/:\$PATH"
 
     rgi load --card_json ${card_db} --local
-    rgi main -i $fasta -o ${prefix} -n $task.cpus $options.args
+    rgi main -i $fasta -o ${prefix}_rgi -n $task.cpus $options.args
+    
     #clean up work dir, if it exists
     [[ -d card_temp ]] && rm -r card_temp
 
@@ -62,17 +63,20 @@ process RGI_HEATMAP {
     }
 
     input:
-    path json
+    //path json
+    path('?.json')
 
     output:
     path('*.png'), emit: heatmap
+    path('rgi_heatmap.eps'), emit: eps
+    path('rgi_heatmap.csv'),   emit: csv
     path "versions.yml"                    , emit: versions
 
     script:
     """
     mkdir dir
     cp ${json.join(' ')} dir
-    rgi heatmap -i dir -o heatmap
+    rgi heatmap -i dir -o rgi_heatmap
 
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:

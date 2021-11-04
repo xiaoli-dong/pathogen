@@ -26,7 +26,7 @@ process MOBSUITE {
     tuple val(meta), path('*_contig_report.txt'), emit: contig_report
     //tuple val(meta), path('*_mobtyper_results.txt'), emit: mobs
     tuple val(meta), path('*_plasmid.txt'), emit: plasmid
-    path ("versions.yml"), emit: version
+    path ("versions.yml"), emit: versions
     
     script:
     def software    = getSoftwareName(task.process)

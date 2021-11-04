@@ -19,7 +19,13 @@ process SRAX {
     input:
         path fasta
     output:
-        path('Results'), emit: result
+        path('*.html'), emit: html
+        path ('Plots'), emit: plots
+        
+        path '*blastx_output.tsv', emit: blastx 
+        path '*detected_ARGs.tsv', emit: report
+        path '*gene_coordinates.tsv', emit: gene_coordinates   
+        path '*putative_paralogs.tsv', emit: paralogs 
         path ("versions.yml"), emit: version
 
     script:
@@ -28,7 +34,12 @@ process SRAX {
     mkdir srax_in
     cp ${fasta.join(' ')} srax_in
     sraX $options.args -i srax_in -o srax_out
-    mv srax_out/Results .
+
+    cp -r srax_out/Results/Summary_files/* .
+    cp -r  srax_out/Results/Plots .
+    cp -r  srax_out/Results/sraX_analysis.html .
+
+    
 
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:
