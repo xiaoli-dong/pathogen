@@ -8,7 +8,7 @@ include {SAMTOOLS_VIEW as VIEW} from '../../modules/nf-core/modules/samtools/vie
 include {SAMTOOLS_SORT as SORT} from '../../modules/nf-core/modules/samtools/sort/main'     addParams( options: modules['samtools_sort']) 
 include {SAMTOOLS_INDEX as INDEX} from '../../modules/nf-core/modules/samtools/index/main'  addParams( options: modules['samtools_index']) 
 include {PILON } from '../../modules/local/pilon'                                           addParams(pilon_round: 1,  options: modules['pilon']) 
-include {SEQSTATS as SEQSTATS_PILON} from '../../modules/local/seqstats' addParams( tool: '_pilon', options: modules['seqstats_assembly'])   
+include {ASSEMBLY_STATS as PILON_STATS} from '../../modules/local/assembly_stats' addParams( options: modules['pilon_assembly_stats'])     
 
 workflow RUN_PILON_POLISH {   
 
@@ -29,12 +29,12 @@ workflow RUN_PILON_POLISH {
         ch_versions = ch_versions.mix(PILON.out.versions.first())
 
         assembly = PILON.out.assembly 
-        SEQSTATS_PILON(assembly)
+        PILON_STATS(assembly)
 
     emit:
         assembly
         versions = ch_versions
-        stats = SEQSTATS_PILON.out.stats
+        stats = PILON_STATS.out.stats
 
 }
 
@@ -50,7 +50,7 @@ include {SAMTOOLS_VIEW as VIEW_STEP2} from '../../modules/nf-core/modules/samtoo
 include {SAMTOOLS_SORT as SORT_STEP2} from '../../modules/nf-core/modules/samtools/sort/main'       addParams( options: modules['samtools_sort']) 
 include {SAMTOOLS_INDEX as INDEX_STEP2} from '../../modules/nf-core/modules/samtools/index/main'    addParams( options: modules['samtools_index']) 
 include {NEXTPOLISH as NEXTPOLISH2} from '../../modules/local/nextpolish'                           addParams(algorithm: 2,  options: modules['nextpolish']) 
-include {SEQSTATS as SEQSTATS_NEXTPOLISH} from '../../modules/local/seqstats' addParams( tool: '_nextpolish', options: modules['seqstats_assembly'])   
+include {ASSEMBLY_STATS as NEXTPOLISH_STATS} from '../../modules/local/assembly_stats' addParams(options: modules['nextpolish_assembly_stats'])     
 
 workflow RUN_NEXTPOLISH_POLISH {
     take:
@@ -84,11 +84,11 @@ workflow RUN_NEXTPOLISH_POLISH {
             input = NEXTPOLISH2.out.assembly 
        //}
         assembly = input
-        SEQSTATS_NEXTPOLISH(assembly)
+        NEXTPOLISH_STATS(assembly)
     
     emit:
         assembly
         versions = ch_versions
-        stats = SEQSTATS_NEXTPOLISH.out.stats
+        stats = NEXTPOLISH_STATS.out.stats
 }
 

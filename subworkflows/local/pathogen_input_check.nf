@@ -19,8 +19,8 @@ workflow INPUT_CHECK {
         .map { create_fastq_channels(it) }
         .set { reads } // channel: [ val(meta), [ reads ] ]
 
-    //reads.view() 
-   
+    println(reads)
+        
     // reconfigure channels
     reads
         .map { meta, reads, long_fastq, fast5 -> [ meta, reads ] }
@@ -46,16 +46,27 @@ workflow INPUT_CHECK {
 
     //fast5.view() 
 
+    
+    reads
+        .map { meta, reads, long_fastq, fast5 -> meta.id }
+        
+        .set {ids}
+
+    //ids.view()
+    
+
     emit:
     reads      // channel: [ val(meta), [ reads ], long_fastq, fast5 ]
     shortreads // channel: [ val(meta), [ reads ] ]
     longreads  // channel: [ val(meta), long_fastq ]
     fast5      // channel: [ val(meta), fast5 ]
+    ids
 }
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ], long_fastq, fast5 ]
 def create_fastq_channels(LinkedHashMap row) {
     def meta = [:]
+    
     meta.id           = row.sample
     meta.single_end   = !(row.fastq_1 == 'NA') && !(row.fastq_2 == 'NA') ? false : true
 
@@ -101,4 +112,4 @@ def create_fastq_channels(LinkedHashMap row) {
     } 
     return array
 }
- 
+

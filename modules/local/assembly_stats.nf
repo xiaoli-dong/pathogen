@@ -4,7 +4,7 @@ include { initOptions; saveFiles; getSoftwareName; getProcessName } from './func
 params.options = [:]
 options        = initOptions(params.options)
 
-process SEQSTATS {
+process ASSEMBLY_STATS {
     tag "$meta.id"
     label 'process_medium'
     
@@ -12,7 +12,7 @@ process SEQSTATS {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
 
-    conda (params.enable_conda ? 'medaka=1.0.1' : null)
+    conda (params.enable_conda ? 'assembly-stats=1.0.1' : null)
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://depot.galaxyproject.org/singularity/assembly-stats%3A1.0.1--h7d875b9_4"
     } else {
@@ -20,20 +20,20 @@ process SEQSTATS {
     }
 
     input:
-    tuple val(meta), path(seq)
+    tuple val(meta), path(assembly)
 
     output:
     tuple val(meta), file("*.tsv"), emit: stats
-    path ("versions.yml"), emit: version
-
+    path ("versions.yml"), emit: versions
+    //refer to nullabour 
     script:
     def software    = getSoftwareName(task.process)
     def prefix      = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
-    def tool = params.tool ? params.tool : ''
-    def input = seq.join('')
+   // def tool = params.tool ? params.tool : ''
+    def input = assembly.join('')
     
     """
-    assembly-stats -t $input > ${prefix}${tool}_stats.tsv
+    assembly-stats -t $input > ${prefix}_assembly_stats.tsv
 
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:

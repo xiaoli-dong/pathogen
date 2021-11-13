@@ -26,13 +26,13 @@ process BAKTA {
     path db
 
     output:
-    tuple val(meta), path('*.gff3'), emit: bakta_gff
-    tuple val(meta), path('*.json'), emit: bakta_json
-    tuple val(meta), path('*.tsv'), emit: bakta_tsv
-    tuple val(meta), path('*.gbff'), emit: bakta_gbff
-    tuple val(meta), path('*.embl'), emit: bakta_embl
-    tuple val(meta), path('*.ffn'), emit: bakta_ffn
-    tuple val(meta), path('*.faa'), emit: bakta_faa
+    tuple val(meta), path('*.gff3'), emit: gff
+    tuple val(meta), path('*.json'), emit: json
+    tuple val(meta), path('*.tsv'), emit: tsv
+    tuple val(meta), path('*.gbff'), emit: gbff
+    tuple val(meta), path('*.embl'), emit: embl
+    tuple val(meta), path('*.ffn'), emit: ffn
+    tuple val(meta), path('*.faa'), emit: faa
     path ("versions.yml"), emit: versions
     
     

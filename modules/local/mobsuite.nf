@@ -23,9 +23,11 @@ process MOBSUITE {
     tuple val(meta), path(asm)
 
     output:
-    tuple val(meta), path('*_contig_report.txt'), emit: contig_report
-    //tuple val(meta), path('*_mobtyper_results.txt'), emit: mobs
-    tuple val(meta), path('*_plasmid.txt'), emit: plasmid
+    tuple val(meta), path('*report.txt'), emit: contig_report
+    tuple val(meta), path('*mobtyper_results.txt'), emit: mobs
+    tuple val(meta), path('*plasmid.txt'), emit: plasmid
+    tuple val(meta), path('*.fasta'), emit: fasta
+    
     path ("versions.yml"), emit: versions
     
     script:
@@ -40,11 +42,11 @@ process MOBSUITE {
         touch mob/mobtyper_results.txt
     fi
     
-    mv mob/contig_report.txt ${prefix}_contig_report.txt
-    mv mob/mobtyper_results.txt ${prefix}_mobtyper_results.txt
-    
-    wrangle_mobsuite.py ${prefix}_mobtyper_results.txt ${prefix}
-    mv plasmid.txt ${prefix}_plasmid.txt
+    mv mob/contig_report.txt ${prefix}.contig_report.txt
+    mv mob/mobtyper_results.txt ${prefix}.mobtyper_results.txt
+    mv mob/chromosome.fasta ${prefix}.chromosome.fasta
+    wrangle_mobsuite.py ${prefix}.mobtyper_results.txt ${prefix}
+    mv plasmid.txt ${prefix}.plasmid.txt
 
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:

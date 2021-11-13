@@ -5,8 +5,8 @@ def modules = params.modules.clone()
                     
 include {UNICYCLERHYBRID} from '../../modules/local/unicyclerhybrid'          addParams( options: modules['unicycler_hybrid']) 
 include {SPADESHYBRID} from '../../modules/local/spadeshybrid'                addParams( options: modules['spades_hybrid']) 
-include {SEQSTATS as SEQSTATS_SPADES} from '../../modules/local/seqstats' addParams( tool: '_spades_hybrid', options: modules['seqstats_assembly'])   
-include {SEQSTATS as SEQSTATS_UNICYCLER} from '../../modules/local/seqstats' addParams( tool: '_unicycler_hybrid', options: modules['seqstats_assembly'])   
+include {ASSEMBLY_STATS as STATS_SPADES} from '../../modules/local/assembly_stats' addParams(options: modules['spades_hybrid_assembly_stats'])   
+include {ASSEMBLY_STATS as STATS_UNICYCLER} from '../../modules/local/assembly_stats' addParams(options: modules['unicycler_hybrid_assembly_stats'])   
 
 workflow RUN_ASSEMBLE_HYBRID {   
 
@@ -23,8 +23,8 @@ workflow RUN_ASSEMBLE_HYBRID {
            
             contigs = UNICYCLERHYBRID.out.scaffolds
             ch_versions = ch_versions.mix(UNICYCLERHYBRID.out.versions.first())
-            SEQSTATS_SPADES(contigs)
-            stats = SEQSTATS_SPADES.out.stats
+            STATS_SPADES(contigs)
+            stats = STATS_SPADES.out.stats
             
         }
 
@@ -33,8 +33,8 @@ workflow RUN_ASSEMBLE_HYBRID {
             SPADESHYBRID (long_reads, short_reads )   
             contigs = SPADESHYBRID.out.contigs    
             ch_versions = ch_versions.mix(SPADESHYBRID.out.versions.first())
-            SEQSTATS_UNICYCLER(contigs)
-            stats = SEQSTATS_UNICYCLER.out.stats
+            STATS_UNICYCLER(contigs)
+            stats = STATS_UNICYCLER.out.stats
         } 
 
         

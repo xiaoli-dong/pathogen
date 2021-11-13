@@ -24,6 +24,7 @@ process SAMPLESHEET_CHECK {
     path '*.csv'
 
     script: // This script is bundled with the pipeline, in nf-core/pathogen/bin/
+    
     """
     check_samplesheet.py \\
         $samplesheet \\

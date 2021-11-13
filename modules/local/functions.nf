@@ -1,11 +1,12 @@
 //
 //  Utility functions used in nf-core DSL2 module files
 //
-
 //
 // Extract name of software tool from process name using $task.process
 //
 def getSoftwareName(task_process) {
+    //print(task_process)
+    
     return task_process.tokenize(':')[-1].tokenize('_')[0].toLowerCase()
 }
 
@@ -13,6 +14,7 @@ def getSoftwareName(task_process) {
 // Extract name of module from process name using $task.process
 //
 def getProcessName(task_process) {
+    //print(task_process)
     return task_process.tokenize(':')[-1]
 }
 
@@ -20,6 +22,8 @@ def getProcessName(task_process) {
 // Function to initialise default values and to generate a Groovy Map of available options for nf-core modules
 //
 def initOptions(Map args) {
+    
+    //print(args)
     def Map options = [:]
     options.args            = args.args ?: ''
     options.args2           = args.args2 ?: ''

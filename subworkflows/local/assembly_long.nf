@@ -7,9 +7,9 @@ include {UNICYCLER as UNICYCLER_LONG} from '../../modules/local/unicycler'      
 include {FLYE} from '../../modules/local/flye'                                addParams( options: modules['flye']) 
 include {MINIMAP2_ALIGN_LONG} from '../../modules/local/minimap_align_long'       addParams( options: modules['minimap_align_long']) 
 include {MINIASM} from '../../modules/local/miniasm'                          addParams( options: modules['miniasm']) 
-include {SEQSTATS as SEQSTATS_FLYE} from '../../modules/local/seqstats' addParams( tool: '_flye', options: modules['seqstats_assembly'])  
-include {SEQSTATS as SEQSTATS_MINIASM} from '../../modules/local/seqstats' addParams( tool: '_miniasm', options: modules['seqstats_assembly'])      
-include {SEQSTATS as SEQSTATS_UNICYCLER} from '../../modules/local/seqstats' addParams( tool: '_unicycler', options: modules['seqstats_assembly'])   
+include {ASSEMBLY_STATS as STATS_FLYE} from '../../modules/local/assembly_stats' addParams(options: modules['flye_assembly_stats'])  
+include {ASSEMBLY_STATS as STATS_MINIASM} from '../../modules/local/assembly_stats' addParams(options: modules['miniasm_assembly_stats'])      
+include {ASSEMBLY_STATS as STATS_UNICYCLER} from '../../modules/local/assembly_stats' addParams(options: modules['unicycler_long_assembly_stats'])   
 
 workflow RUN_ASSEMBLE_LONG {   
 
@@ -23,8 +23,8 @@ workflow RUN_ASSEMBLE_LONG {
             FLYE ( long_reads )
             contigs = FLYE.out.assembly
             ch_versions = ch_versions.mix(FLYE.out.versions.first())
-            SEQSTATS_FLYE(contigs)
-            stats = SEQSTATS_FLYE.out.stats
+            STATS_FLYE(contigs)
+            stats = STATS_FLYE.out.stats
         } 
         //failed testing with the current sample
         else if ( params.long_reads_assembler == 'miniasm' ){
@@ -32,8 +32,8 @@ workflow RUN_ASSEMBLE_LONG {
             MINIASM ( long_reads, MINIMAP2_ALIGN.out.paf)
             contigs = MINIASM.out.assembly
             ch_versions = ch_versions.mix(MINIASM.out.versions.first())
-            SEQSTATS_MINIASM(contigs)
-            stats = SEQSTATS_MINIASM.out.stats
+            STATS_MINIASM(contigs)
+            stats = STATS_MINIASM.out.stats
             
         } 
         //If your long-read depth falls between those values, it might be worth trying both approaches.
@@ -43,8 +43,8 @@ workflow RUN_ASSEMBLE_LONG {
             UNICYCLER_LONG(long_reads)
             contigs = UNICYCLER_LONG.out.scaffolds
             ch_versions = ch_versions.mix(UNICYCLER_LONG.out.versions.first())
-            SEQSTATS_UNICYCLER(contigs)
-            stats = SEQSTATS_UNICYCLER.out.stats
+            STATS_UNICYCLER(contigs)
+            stats = STATS_UNICYCLER.out.stats
             
         }
 

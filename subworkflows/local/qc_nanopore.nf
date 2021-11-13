@@ -4,13 +4,14 @@
 def modules = params.modules.clone()
 
 //nanopore
-include {NANOPLOT as NANOPLOT_RAW} from '../../modules/nf-core/modules/nanoplot/main' addParams( options: modules['nanoplot']) 
-include {NANOPLOT as NANOPLOT_QC}  from '../../modules/nf-core/modules/nanoplot/main' addParams( options: modules['nanoplot']) 
+include {NANOPLOT as NANOPLOT_RAW} from '../../modules/nf-core/modules/nanoplot/main' addParams( options: modules['nanoplot_raw']) 
+include {NANOPLOT as NANOPLOT_QC}  from '../../modules/nf-core/modules/nanoplot/main' addParams( options: modules['nanoplot_qc']) 
 include {PORECHOP} from '../../modules/local//porechop'                              addParams( options: modules['porechop']) 
-//include { SEQTK_FQCHK as NANOPORESTATS_RAW } from '../modules/seqtk/fqchk/main'    addParams( options: modules['seqtk_fqchk_longreads_raw'] )
-//include { SEQTK_FQCHK as NANOPORESTATS_QC } from '../modules/seqtk/fqchk/main'     addParams( options: modules['seqtk_fqchk_longreads_qc'] )
-include {SEQSTATS as SEQSTATS_RAW} from '../../modules/local/seqstats' addParams( tool: '', options: modules['seqstats_reads'])   
-include {SEQSTATS as SEQSTATS_QC} from '../../modules/local/seqstats' addParams( tool: '', options: modules['seqstats_reads'])   
+
+include {SEQTK_FQCHK as SEQTK_FQCHK_RAW} from '../../modules/local/seqtk_fqchk' addParams( options: modules['seqtk_fqchk_longreads_raw']) 
+include {SEQ_STATS as SEQ_STATS_RAW} from '../../modules/local/seq_stats' addParams( options: modules['seq_stats_longreads_raw']) 
+include {SEQTK_FQCHK as SEQTK_FQCHK_QC} from '../../modules/local/seqtk_fqchk' addParams( options: modules['porechop_qc_seqtk_fqchk']) 
+include {SEQ_STATS as SEQ_STATS_QC} from '../../modules/local/seq_stats' addParams( options: modules['porechop_qc_seq_stats']) 
 
 
 workflow RUN_NANOPORE_QC {
@@ -23,24 +24,32 @@ workflow RUN_NANOPORE_QC {
 
         NANOPLOT_RAW(reads)
         ch_versions = ch_versions.mix(NANOPLOT_RAW.out.versions.first())
-        SEQSTATS_RAW(reads)
-        raw_stats = SEQSTATS_RAW.out.stats
+        
+        SEQTK_FQCHK_RAW(reads)
+        ch_versions = ch_versions.mix(SEQTK_FQCHK_RAW.out.versions.first())
+        SEQ_STATS_RAW(SEQTK_FQCHK_RAW.out.stats)
 
+        // NANOPORESTATS_RAW(reads)
+        // raw_stats = NANOPORESTATS_RAW.out.stats
+        //ch_versions = ch_versions.mix(NANOPORESTATS_RAW.out.versions.first())
         PORECHOP(reads)
         
         qc_reads = PORECHOP.out.reads
         ch_versions = ch_versions.mix(PORECHOP.out.versions.first())
-        SEQSTATS_QC(reads)
-        qc_stats = SEQSTATS_QC.out.stats
+        SEQTK_FQCHK_QC(qc_reads)
+        SEQ_STATS_QC(SEQTK_FQCHK_QC.out.stats)
+
+        // NANOPORESTATS_QC(reads)
+        // qc_stats = NANOPORESTATS_QC.out.stats
 
 
         NANOPLOT_QC(qc_reads)
 
 
     emit:
-        raw_stats
+        raw_stats = SEQ_STATS_RAW.out.stats
         qc_reads
-        qc_stats
+        qc_stats = SEQ_STATS_QC.out.stats
         versions = ch_versions
 
 }

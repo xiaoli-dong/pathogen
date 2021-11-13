@@ -12,7 +12,8 @@ include {RACON as RACON1} from '../../modules/local/racon'                      
 include {RACON as RACON2} from '../../modules/local/racon'                              addParams(racon_round: 2,  options: modules['racon']) 
 include {RACON as RACON3} from '../../modules/local/racon'                              addParams(racon_round: 3,  options: modules['racon']) 
 include {RACON as RACON4} from '../../modules/local/racon'                              addParams(racon_round: 4,  options: modules['racon']) 
-include {SEQSTATS} from '../../modules/local/seqstats' addParams( tool: '_racon', options: modules['seqstats_assembly'])   
+
+include {ASSEMBLY_STATS} from '../../modules/local/assembly_stats' addParams(options: modules['racon_assembly_stats'])     
 workflow RUN_RACON_POLISH {   
 
     take:
@@ -47,12 +48,12 @@ workflow RUN_RACON_POLISH {
         round4_paf = MAP4.out.paf
         RACON4(long_reads, round4_paf, round3_asm)
         assembly = RACON4.out.assembly
-        SEQSTATS(assembly)
+        ASSEMBLY_STATS(assembly)
 
     emit:
         assembly
         versions = ch_versions
-        stats = SEQSTATS.out.stats
+        stats = ASSEMBLY_STATS.out.stats
         
 }
 

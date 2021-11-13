@@ -10,7 +10,7 @@ process ABRICATE {
 
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:meta.id) }
+        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
 
     conda (params.enable_conda ? "bioconda::abricate=0.8.13" : null)
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -30,10 +30,7 @@ process ABRICATE {
     def prefix  = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     //def datadir = params.abricate_datadir ? "--datadir ${params.abricate_datadir}" : ""
     """
-    #[ ! -f  ${prefix}.fasta ] && ln -s $fasta ${prefix}.fasta
-    #abricate $options.args ${prefix}.fasta --threads $task.cpus  > ${prefix}_abricate.tsv
     abricate $options.args ${fasta} --threads $task.cpus  > ${prefix}_abricate.tsv
-    #extract_gene_fasta.py ${prefix}.tsv $fasta
 
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:
@@ -47,7 +44,7 @@ process ABRICATE_SUMMARIZE {
     label 'process_medium'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:'') }
+        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
     
     conda (params.enable_conda ? "bioconda::abricate=0.8.13" : null)
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -57,16 +54,18 @@ process ABRICATE_SUMMARIZE {
     }
 
     input:
-    path('?.tsv')
+    path(reports)
 
     output:
     path('all_abricate_summary.tsv'), emit: summary
     path ("versions.yml"), emit: versions
     
     script:
+    def input = reports.join(' ')
     """
-    abricate --summary *.tsv > all_abricate_summary.tsv
-
+    #abricate --summary *.tsv > all_abricate_summary.tsv
+    abricate --summary ${input} > all_abricate_summary.tsv
+    
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:
         ${getSoftwareName(task.process)}: \$(abricate --version 2>& 1 | sed 's/^abricate //;')
