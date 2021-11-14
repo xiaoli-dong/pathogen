@@ -23,8 +23,18 @@ include { ABRICATE as ABRICATE_VF} from '../modules/local/abricate' addParams( o
 include { ABRICATE_SUMMARIZE as ABRICATE_SUMMARIZE_VF} from '../modules/local/abricate' addParams( options: modules['abricate_vf_summarize'])
 
 
-include {GET_SAMPLEIDS} from '../modules/local/get_sampleids' addParams( options: modules['get_sampleids'])
-
+include {GET_SAMPLEIDS} from '../modules/local/get_sampleids' addParams( options: modules['csvtk_concat'])
+include {
+    CSVTK_CONCAT as CONCAT_STATS_SHORT_RAW;
+    CSVTK_CONCAT as CONCAT_STATS_SHORT_QC;
+    CSVTK_CONCAT as CONCAT_STATS_LONG_RAW;
+    CSVTK_CONCAT as CONCAT_STATS_LONG_QC;
+    CSVTK_CONCAT as CONCAT_STATS_ASM;
+    CSVTK_CONCAT as CONCAT_STATS_BAKTA;
+    CSVTK_CONCAT as CONCAT_STATS_PROKKA;
+    CSVTK_CONCAT as CONCAT_MLST;
+    CSVTK_CONCAT as CONCAT_MOBSUITE;
+} from '../modules/local/csvtk_concat' addParams( options: modules['csvtk_concat'])
 
 /*
 ========================================================================================
@@ -112,21 +122,26 @@ workflow PATHOGEN {
     short_reads = INPUT_CHECK.out.shortreads
     long_reads = INPUT_CHECK.out.longreads
 
-    print("before input_check.......................")
     
     INPUT_CHECK.out.ids.collect() | GET_SAMPLEIDS
-    print("after input_check.......................*******")
+    
 
 
     if(!params.skip_short_reads_qc){
         RUN_ILLUMINA_QC(short_reads)
         ch_software_versions = ch_software_versions.mix(RUN_ILLUMINA_QC.out.versions)
         short_reads = RUN_ILLUMINA_QC.out.qc_reads
+        CONCAT_STATS_SHORT_RAW(RUN_ILLUMINA_QC.out.raw_stats.map { cfg, stats -> stats }.collect().map { files -> tuple("short_reads_raw_seqstats", files)} )
+        CONCAT_STATS_SHORT_QC(RUN_ILLUMINA_QC.out.qc_stats.map { cfg, stats -> stats }.collect().map { files -> tuple("short_reads_qc_seqstats", files)} )
+        
     }
     if(!params.skip_long_reads_qc){
         RUN_NANOPORE_QC(long_reads)
         long_reads = RUN_NANOPORE_QC.out.qc_reads
         ch_software_versions = ch_software_versions.mix(RUN_NANOPORE_QC.out.versions)
+        CONCAT_STATS_LONG_RAW(RUN_NANOPORE_QC.out.raw_stats.map { cfg, stats -> stats }.collect().map { files -> tuple("long_reads_raw_seqstats", files)} )
+        CONCAT_STATS_LONG_QC(RUN_NANOPORE_QC.out.qc_stats.map { cfg, stats -> stats }.collect().map { files -> tuple("long_reads_qc_seqstats", files)} )
+        
     }
 
     //classify
@@ -145,22 +160,26 @@ workflow PATHOGEN {
         RUN_ASSEMBLE_SHORT ( short_reads)
         contigs = RUN_ASSEMBLE_SHORT.out.contigs
         ch_software_versions = ch_software_versions.mix(RUN_ASSEMBLE_SHORT.out.versions)
+        stats = RUN_ASSEMBLE_SHORT.out.stats
+          
     } 
     if(!params.skip_long_reads_assembly && params.assembly_type == 'long'){
     
         RUN_ASSEMBLE_LONG ( long_reads, short_reads)
         contigs = RUN_ASSEMBLE_LONG.out.contigs
         ch_software_versions = ch_software_versions.mix(RUN_ASSEMBLE_LONG.out.versions)
-
+        stats = RUN_ASSEMBLE_LONG.out.stats
         if(!params.skip_racon){
             RUN_RACON_POLISH(long_reads, contigs)
             contigs = RUN_RACON_POLISH.out.assembly
             ch_software_versions = ch_software_versions.mix(RUN_RACON_POLISH.out.versions)
+            stats = RUN_RACON_POLISH.out.stats
         }
         if(!params.skip_medaka){
             MEDAKA(long_reads,  contigs)
             contigs = MEDAKA.out.assembly
             ch_software_versions = ch_software_versions.mix(MEDAKA.out.versions)
+            stats = MEDAKA.out.stats
         }
 
         if(!params.skip_short_reads_polish  && params.short_reads_polisher  == "pilon"){
@@ -178,6 +197,8 @@ workflow PATHOGEN {
             RUN_PILON_POLISH4(short_reads, contigs)
             contigs = RUN_PILON_POLISH4.out.assembly
 
+            stats = RUN_PILON_POLISH4.out.stats
+
         }
         if(!params.skip_short_reads_polish  && params.short_reads_polisher  == "1xpolca+2xnextpolish"){
             //when run as sigularity, the program is depend on bwa, it is not working 
@@ -194,9 +215,12 @@ workflow PATHOGEN {
 
                 RUN_NEXTPOLISH_POLISH2(short_reads, contigs )
                 contigs = RUN_NEXTPOLISH_POLISH2.out.assembly 
+                stats = RUN_NEXTPOLISH_POLISH2.out.stats
 
             }
         }
+
+       
     
     }
     if(!params.skip_hybrid_reads_assembly && params.assembly_type == 'hybrid'){
@@ -205,9 +229,12 @@ workflow PATHOGEN {
         RUN_ASSEMBLE_HYBRID ( long_reads, short_reads)
         contigs =RUN_ASSEMBLE_HYBRID.out.contigs
         ch_software_versions = ch_software_versions.mix(RUN_ASSEMBLE_HYBRID.out.versions)
+
+        stats = RUN_ASSEMBLE_HYBRID.out.stats
         
     }
-    
+    CONCAT_STATS_ASM(stats.map { cfg, stats -> stats }.collect().map { files -> tuple("assembly_stats", files)} )
+        
      // analysis
      if(params.annotation_tool== "bakta"){
         Channel
@@ -217,21 +244,25 @@ workflow PATHOGEN {
         BAKTA(contigs, ch_bakta_db_file)
         BAKTA_FEATURES(BAKTA.out.gff)
         ch_software_versions = ch_software_versions.mix(BAKTA.out.versions)
+        CONCAT_STATS_BAKTA(BAKTA_FEATURES.out.feature_count.map { cfg, stats -> stats }.collect().map { files -> tuple("bakta", files)} )
      }
      else if(params.annotation_tool == "prokka"){
         PROKKA(contigs, [], [])
         PROKKA_FEATURES(PROKKA.out.gff)
         ch_software_versions = ch_software_versions.mix(PROKKA.out.versions)
+        CONCAT_STATS_PROKKA(PROKKA_FEATURES.out.feature_count.map { cfg, stats -> stats }.collect().map { files -> tuple("prokka", files)} )
     }
     //card_db = Channel.fromPath( "${params.card_db}")
     //ARG(contigs, card_db)
     if(!params.skip_mlst){
         MLST (contigs)
         ch_software_versions = ch_software_versions.mix(MLST.out.versions)
+        CONCAT_MLST (MLST.out.tsv.map { cfg, mlst -> mlst }.collect().map { files -> tuple("mlst", files)} )
     }
     if(!params.skip_mobsuite){
         MOBSUITE (contigs )
         ch_software_versions = ch_software_versions.mix(MOBSUITE.out.versions)
+        CONCAT_MOBSUITE (MOBSUITE.out.plasmid.map { cfg, plasmid -> plasmid }.collect().map { files -> tuple("mobsuite", files)} )
     } 
     //[[id:sample1, single_end:false, genome_size:2.8m], /data/deve/dsl2_workflows/pathogen/work/c5/0433a6c7c3da2c34511b6ad1c34a74/sample1_abricate.tsv]         
     if(!params.skip_virulome){

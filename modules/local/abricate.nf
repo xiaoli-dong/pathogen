@@ -57,14 +57,14 @@ process ABRICATE_SUMMARIZE {
     path(reports)
 
     output:
-    path('all_abricate_summary.tsv'), emit: summary
+    path('*.tsv'), emit: summary
     path ("versions.yml"), emit: versions
     
     script:
     def input = reports.join(' ')
     """
     #abricate --summary *.tsv > all_abricate_summary.tsv
-    abricate --summary ${input} > all_abricate_summary.tsv
+    abricate --summary ${input} > vf.tsv
     
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:
