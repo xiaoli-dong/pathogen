@@ -29,8 +29,10 @@ process CSVTK_CONCAT {
 
     script:
     def input_files = input.join(' ')
+    def header = params.header ? params.header : ""
+
     """
-    csvtk concat -t -T $input_files > ${output_name}.tsv
+    csvtk concat $header -t -T $input_files > ${output_name}.tsv
 
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:

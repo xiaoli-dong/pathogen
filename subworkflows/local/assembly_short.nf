@@ -17,13 +17,6 @@ workflow RUN_ASSEMBLE_SHORT {
     main:
         ch_versions = Channel.empty()
 
-        //[shovill] Assembly failed - spades.fasta has zero contigs!
-        //disable it
-       /*  if ( params.short_reads_assembler == 'shovill'){
-            SHOVILL ( reads )   
-            contigs = SHOVILL.out.contigs   
-            version = SHOVILL.out.version 
-        }  */
         if ( params.short_reads_assembler == 'spades' ){
             SPADES ( reads, [])
             contigs = SPADES.out.contigs

@@ -32,14 +32,13 @@ process BAKTA {
     tuple val(meta), path('*.gbff'), emit: gbff
     tuple val(meta), path('*.embl'), emit: embl
     tuple val(meta), path('*.ffn'), emit: ffn
-    tuple val(meta), path('*.faa'), emit: faa
+    tuple val(meta), path("${meta.id}.faa"), emit: faa
     path ("versions.yml"), emit: versions
     
     
     script:
     def software    = getSoftwareName(task.process)
     def prefix      = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
-    
     
     """
     

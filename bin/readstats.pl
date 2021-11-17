@@ -93,7 +93,7 @@ push(@seq_files, $read2) if $seqtype eq "paired";
     push(@out, $stat{ambig_bp_pc});
     #print join(",", @out), "\n";
     
-  my @header = ("Isolate", "Reads", "Yield", "GeeCee", "MinLen", "AvgLen", "MaxLen", "AvgQual", "ErrQual", "Ambiguous");
+  my @header = ("Isolate", "Reads", "Yield", "GC", "MinLen", "AvgLen", "MaxLen", "AvgQual", "ErrQual", "Ambiguous");
 
 print join("\t", @header), "\n";
 print join("\t", @out), "\n";

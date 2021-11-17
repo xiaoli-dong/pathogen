@@ -21,6 +21,7 @@ include {GFF2FEATURES as PROKKA_FEATURES} from '../modules/local/gff2features'  
 include { MOBSUITE } from '../modules/local/mobsuite'          addParams( options: modules['mobsuite'])
 include { ABRICATE as ABRICATE_VF} from '../modules/local/abricate' addParams( options: modules['abricate_vf'])
 include { ABRICATE_SUMMARIZE as ABRICATE_SUMMARIZE_VF} from '../modules/local/abricate' addParams( options: modules['abricate_vf_summarize'])
+include {AMRFINDERPLUS} from '../modules/local/amrfinderplus' addParams( options: modules['amrfinderplus'])
 
 
 include {GET_SAMPLEIDS} from '../modules/local/get_sampleids' addParams( options: modules['csvtk_concat'])
@@ -32,9 +33,16 @@ include {
     CSVTK_CONCAT as CONCAT_STATS_ASM;
     CSVTK_CONCAT as CONCAT_STATS_BAKTA;
     CSVTK_CONCAT as CONCAT_STATS_PROKKA;
-    CSVTK_CONCAT as CONCAT_MLST;
     CSVTK_CONCAT as CONCAT_MOBSUITE;
-} from '../modules/local/csvtk_concat' addParams( options: modules['csvtk_concat'])
+    CSVTK_CONCAT as CONCAT_AMR;
+
+} from '../modules/local/csvtk_concat' addParams( header: '',  options: modules['csvtk_concat'])
+
+
+include {
+    CSVTK_CONCAT as CONCAT_MLST;
+
+} from '../modules/local/csvtk_concat' addParams(header: '-H', options: modules['csvtk_concat'])
 
 /*
 ========================================================================================
@@ -55,7 +63,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK } from '../subworkflows/local/pathogen_input_check' addParams( options: [:] )
+include { INPUT_CHECK } from '../subworkflows/local/input_check' addParams( options: [:] )
 include {RUN_ILLUMINA_QC} from '../subworkflows/local/qc_illumina'
 include {RUN_NANOPORE_QC} from '../subworkflows/local/qc_nanopore'
 include {RUN_ASSEMBLE_SHORT} from '../subworkflows/local/assembly_short'
@@ -245,15 +253,31 @@ workflow PATHOGEN {
         BAKTA_FEATURES(BAKTA.out.gff)
         ch_software_versions = ch_software_versions.mix(BAKTA.out.versions)
         CONCAT_STATS_BAKTA(BAKTA_FEATURES.out.feature_count.map { cfg, stats -> stats }.collect().map { files -> tuple("bakta", files)} )
-     }
+        gff = BAKTA.out.gff 
+        ffn = BAKTA.out.ffn
+        faa = BAKTA.out.faa
+    }
      else if(params.annotation_tool == "prokka"){
         PROKKA(contigs, [], [])
         PROKKA_FEATURES(PROKKA.out.gff)
         ch_software_versions = ch_software_versions.mix(PROKKA.out.versions)
         CONCAT_STATS_PROKKA(PROKKA_FEATURES.out.feature_count.map { cfg, stats -> stats }.collect().map { files -> tuple("prokka", files)} )
+        gff=PROKKA.out.gff
+        ffn = PROKKA.out.ffn
+        faa = PROKKA.out.faa
     }
-    //card_db = Channel.fromPath( "${params.card_db}")
-    //ARG(contigs, card_db)
+    
+    //ARG(contigs, ffn, faa)
+    if(!params.skip_amr ){
+        Channel
+            .value(file( "${params.amrfinderplus_db}" ))
+            .set { ch_amrfinderplus_db_file }
+
+        AMRFINDERPLUS(contigs, ch_amrfinderplus_db_file)
+        ch_software_versions = ch_software_versions.mix(AMRFINDERPLUS.out.versions)
+        CONCAT_AMR(AMRFINDERPLUS.out.tsv.map { cfg, amr -> amr }.collect().map { files -> tuple("amrfinderplus", files)} )
+    }
+    
     if(!params.skip_mlst){
         MLST (contigs)
         ch_software_versions = ch_software_versions.mix(MLST.out.versions)

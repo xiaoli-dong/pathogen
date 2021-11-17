@@ -38,6 +38,47 @@ process HAMRONIZE_ABRICATE {
 
     """
 }
+
+process HAMRONIZE_AMRFINDERPLUS {
+    tag "$meta.id"
+
+    publishDir "${params.outdir}",
+        mode: params.publish_dir_mode,
+        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:meta.id) }
+
+    
+    conda (params.enable_conda ? "bioconda::hamronization=1.0.3" : null)
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://depot.galaxyproject.org/singularity/hamronization%3A1.0.3--py_0"
+    } else {
+        container "quay.io/biocontainers/hamronization:1.0.3--py_0"
+    }
+
+    input:
+    tuple val(meta), path(report)
+
+    output:
+    tuple val(meta), path('*.tsv'), emit: hamronized
+    path "versions.yml"                    , emit: versions
+
+    script:
+    def prefix  = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
+    """
+    hamronize \\
+        amrfinderplus \\
+        ${report} \\
+        --reference_database_version db_v_1 \\
+        --analysis_software_version tool_v_1 \\
+        --input_file_name aafasta \\
+        --output ${prefix}_amrfinderplus_hamronized.tsv
+    
+    cat <<-END_VERSIONS > versions.yml
+    ${getProcessName(task.process)}:
+        ${getSoftwareName(task.process)}: \$(hamronize -v | sed 's/hamronize //g' )
+    END_VERSIONS
+
+    """
+}
 process HAMRONIZE_SRAX {
     //tag "$meta.id"
 

@@ -32,13 +32,14 @@ while (<IN>) {
     my @l = split(/\t/, $_);
     $stat{$l[2]}++;
 }
-
+print "Sample_id\t";
 print join("\t", sort keys %stat);
 print "\n";
 my @values = ();
 foreach my $k (sort keys %stat) {
     push(@values, $stat{$k});
 }
+print "$sample_name\t";
 print join("\t", @values);
 print "\n";
 

@@ -64,7 +64,7 @@ process ABRICATE_SUMMARIZE {
     def input = reports.join(' ')
     """
     #abricate --summary *.tsv > all_abricate_summary.tsv
-    abricate --summary ${input} > vf.tsv
+    abricate $options.args --summary ${input} > vf.tsv
     
     cat <<-END_VERSIONS > versions.yml
     ${getProcessName(task.process)}:
