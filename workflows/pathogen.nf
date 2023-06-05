@@ -187,7 +187,7 @@ workflow PATHOGEN {
             MEDAKA(long_reads,  contigs)
             contigs = MEDAKA.out.assembly
             ch_software_versions = ch_software_versions.mix(MEDAKA.out.versions)
-            stats = MEDAKA.out.stats
+            //stats = MEDAKA.out.stats
         }
 
         if(!params.skip_short_reads_polish  && params.short_reads_polisher  == "pilon"){

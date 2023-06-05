@@ -12,13 +12,10 @@ process BAKTA {
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
 
     cache 'lenient'
-    conda (params.enable_conda ? 'bioconda::bakta=1.2.2' : null)
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container 'https://depot.galaxyproject.org/singularity/bakta%3A1.2.2--pyhdfd78af_0'
-    } else {
-        container 'quay.io/biocontainers/bakta:1.2.2--pyhdfd78af_0'
-    }
-
+    conda "bioconda::bakta=1.6.1"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/bakta%3A1.6.1--pyhdfd78af_0' :
+        'biocontainers/bakta:1.6.1--pyhdfd78af_0' }"
     scratch true
     
     input:
